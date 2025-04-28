@@ -1,18 +1,53 @@
-const withPWA = require('next-pwa');
-const runtimeCaching = require('next-pwa/cache');
+/** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/middleware-manifest\.json$/],
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\./,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 10,
+          maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+        }
+      }
+    },
+    {
+      urlPattern: /\.(png|svg|jpg|jpeg|gif|ico|webp)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+        }
+      }
+    }
+  ]
+});
 
-const nextConfig = withPWA({
-  pwa: {
-    dest: 'public',
-    runtimeCaching,
-    disable: process.env.NODE_ENV === 'development',
+const nextConfig = {
+  reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: process.env.NODE_ENV === 'development'
   },
-  async headers() {
+  eslint: {
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development'
+  },
+  headers: async () => {
     return [
       {
         source: '/(.*)',
         headers: [
-          { key: 'Content-Security-Policy', value: "default-src 'self'; img-src * data:; object-src 'none';" },
+          { 
+            key: 'Content-Security-Policy', 
+            value: "default-src 'self'; img-src * data: blob: 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com;" 
+          },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -21,14 +56,14 @@ const nextConfig = withPWA({
       },
     ];
   },
-  async rewrites() {
+  rewrites: async () => {
     return [
       {
         source: '/',
         destination: '/landing',
       },
     ];
-  },
-});
+  }
+};
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);
