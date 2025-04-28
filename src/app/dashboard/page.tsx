@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Dialog } from "@headlessui/react";
 
 const SIDEBAR_USER = [
   { key: "overview", label: "Ringkasan" },
@@ -12,6 +13,7 @@ const SIDEBAR_USER = [
 const SIDEBAR_ADMIN = [
   { key: "pending", label: "Transaksi Pending" },
   { key: "users", label: "Manage User" },
+  { key: "report", label: "Laporan" },
 ];
 
 export default function DashboardPage() {
@@ -71,6 +73,7 @@ export default function DashboardPage() {
         {!isAdmin && sidebar === "profile" && <UserProfile user={user} profile={profile} />}
         {isAdmin && sidebar === "pending" && <AdminPending />}
         {isAdmin && sidebar === "users" && <AdminUsers />}
+        {isAdmin && sidebar === "report" && <AdminReport />}
       </main>
     </div>
   );
@@ -234,6 +237,11 @@ function AdminPending() {
   const [trx, setTrx] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState("");
+  const [detailTrx, setDetailTrx] = useState<any>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailLog, setDetailLog] = useState<any[]>([]);
+  const [detailUser, setDetailUser] = useState<any | null>(null);
+  const [showUser, setShowUser] = useState(false);
 
   useEffect(() => {
     supabase
@@ -269,6 +277,28 @@ function AdminPending() {
     setTrx(trx.filter((t: any) => t.id !== id));
   };
 
+  const openDetail = async (trx: any) => {
+    setDetailTrx(trx);
+    setShowDetail(true);
+    // Fetch log aksi dinamis
+    const { data: logs } = await supabase
+      .from('transaction_logs')
+      .select('id, action, note, performed_by, created_at')
+      .eq('transaction_id', trx.id)
+      .order('created_at', { ascending: true });
+    setDetailLog(logs || []);
+  };
+
+  const openUser = async (userId: string) => {
+    setShowUser(true);
+    const { data: user } = await supabase
+      .from('profiles')
+      .select('user_id, username, role, banned, bio, avatar_url')
+      .eq('user_id', userId)
+      .single();
+    setDetailUser(user);
+  };
+
   if (loading) return <div>Loading transaksi pending...</div>;
   return (
     <div>
@@ -297,6 +327,7 @@ function AdminPending() {
                 <td className="px-3 py-2 flex gap-2">
                   <button onClick={() => handleApprove(t.id)} className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">Approve</button>
                   <button onClick={() => handleRefund(t.id)} className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">Refund</button>
+                  <button onClick={() => openDetail(t)} className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">Detail</button>
                 </td>
               </tr>
             ))}
@@ -306,6 +337,55 @@ function AdminPending() {
           </tbody>
         </table>
       </div>
+      {showDetail && detailTrx && (
+        <Dialog open={showDetail} onClose={() => setShowDetail(false)} className="fixed z-50 inset-0 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+          <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full p-6 z-10">
+            <h3 className="text-lg font-bold mb-2">Detail Transaksi</h3>
+            <div className="mb-2 text-sm text-gray-700">
+              <div><b>ID:</b> {detailTrx.id}</div>
+              <div><b>Listing:</b> {detailTrx.listing_id}</div>
+              <div><b>Nominal:</b> Rp {detailTrx.amount.toLocaleString()}</div>
+              <div><b>Status Order:</b> {detailTrx.status_order}</div>
+              <div><b>Status Payment:</b> {detailTrx.status_payment}</div>
+              <div><b>Buyer:</b> <button className="underline text-blue-700" onClick={() => openUser(detailTrx.buyer_id)}>{detailTrx.buyer_id}</button></div>
+              <div><b>Seller:</b> <button className="underline text-blue-700" onClick={() => openUser(detailTrx.seller_id)}>{detailTrx.seller_id}</button></div>
+              <div><b>Tanggal:</b> {new Date(detailTrx.created_at).toLocaleString()}</div>
+            </div>
+            <div className="mb-2">
+              <b>Log Aksi:</b>
+              <ul className="text-xs text-gray-600 list-disc ml-5 mt-1">
+                {detailLog.length === 0 && <li>Belum ada log aksi.</li>}
+                {detailLog.map((log) => (
+                  <li key={log.id}>
+                    <span className="font-semibold">[{log.action}]</span> {log.note} oleh <span className="font-mono">{log.performed_by}</span> <span className="ml-2 text-gray-400">({new Date(log.created_at).toLocaleString()})</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button onClick={() => setShowDetail(false)} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Tutup</button>
+          </div>
+        </Dialog>
+      )}
+      {showUser && detailUser && (
+        <Dialog open={showUser} onClose={() => setShowUser(false)} className="fixed z-50 inset-0 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+          <div className="relative bg-white rounded-lg shadow-lg max-w-md w-full p-6 z-10">
+            <h3 className="text-lg font-bold mb-2">Detail User</h3>
+            <div className="flex gap-4 items-center mb-4">
+              {detailUser.avatar_url && <img src={detailUser.avatar_url} alt="avatar" className="w-16 h-16 rounded-full object-cover" />}
+              <div>
+                <div className="font-semibold">{detailUser.username}</div>
+                <div className="text-xs text-gray-500">ID: {detailUser.user_id}</div>
+                <div className="text-xs">Role: {detailUser.role}</div>
+                <div className="text-xs">Status: {detailUser.banned ? 'Banned' : 'Aktif'}</div>
+              </div>
+            </div>
+            <div className="mb-2 text-sm text-gray-700">{detailUser.bio}</div>
+            <button onClick={() => setShowUser(false)} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Tutup</button>
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 }
@@ -314,6 +394,7 @@ function AdminUsers() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState("");
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     supabase
@@ -348,10 +429,23 @@ function AdminUsers() {
     }
   };
 
+  const filteredUsers = users.filter((u: any) =>
+    u.username?.toLowerCase().includes(filter.toLowerCase()) ||
+    u.role?.toLowerCase().includes(filter.toLowerCase()) ||
+    (u.banned ? "banned" : "aktif").includes(filter.toLowerCase())
+  );
+
   if (loading) return <div>Loading user...</div>;
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Manajemen User</h2>
+      <input
+        type="text"
+        placeholder="Cari username, role, status..."
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+        className="mb-4 border px-3 py-2 rounded w-full max-w-xs"
+      />
       {actionMsg && <div className="mb-2 text-green-700">{actionMsg}</div>}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
@@ -365,7 +459,7 @@ function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
+            {filteredUsers.map((u) => (
               <tr key={u.user_id} className="border-b">
                 <td className="px-3 py-2">{u.user_id}</td>
                 <td className="px-3 py-2">{u.username}</td>
@@ -380,12 +474,52 @@ function AdminUsers() {
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {filteredUsers.length === 0 && (
               <tr><td colSpan={5} className="text-gray-500 text-center py-4">Tidak ada user.</td></tr>
             )}
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function AdminReport() {
+  const [stat, setStat] = useState<any>({});
+  useEffect(() => {
+    const fetchStat = async () => {
+      // Query statistik sederhana
+      const [trx, user, listing] = await Promise.all([
+        supabase.from('transactions').select('id'),
+        supabase.from('profiles').select('user_id'),
+        supabase.from('listings').select('id'),
+      ]);
+      setStat({
+        transaksi: trx.data?.length || 0,
+        user: user.data?.length || 0,
+        listing: listing.data?.length || 0,
+      });
+    };
+    fetchStat();
+  }, []);
+  return (
+    <div>
+      <h2 className="text-xl font-bold mb-4">Panel Laporan</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded shadow p-6">
+          <div className="text-gray-700">Total Transaksi</div>
+          <div className="text-2xl font-bold text-blue-700">{stat.transaksi}</div>
+        </div>
+        <div className="bg-white rounded shadow p-6">
+          <div className="text-gray-700">Total User</div>
+          <div className="text-2xl font-bold text-blue-700">{stat.user}</div>
+        </div>
+        <div className="bg-white rounded shadow p-6">
+          <div className="text-gray-700">Total Listing</div>
+          <div className="text-2xl font-bold text-blue-700">{stat.listing}</div>
+        </div>
+      </div>
+      {/* Bisa tambahkan grafik/analitik lain di sini */}
     </div>
   );
 }
