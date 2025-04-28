@@ -1,0 +1,10 @@
+{
+  "common": {
+    "home": "Beranda",
+    "marketplace": "Marketplace",
+    "dashboard": "Dashboard",
+    "login": "Masuk",
+    "register": "Daftar",
+    "logout": "Keluar"
+  }
+}

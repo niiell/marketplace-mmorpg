@@ -1,0 +1,10 @@
+{
+  "common": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  }
+}
