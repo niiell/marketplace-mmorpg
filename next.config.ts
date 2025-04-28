@@ -46,7 +46,7 @@ const nextConfig = {
         headers: [
           { 
             key: 'Content-Security-Policy', 
-            value: "default-src 'self'; img-src * data: blob: 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com;" 
+            value: "default-src 'self' https://*.supabase.co; img-src * data: blob: 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co" 
           },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },

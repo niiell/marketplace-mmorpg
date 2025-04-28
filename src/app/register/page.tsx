@@ -21,16 +21,42 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   const onSubmit = async (data: FormData) => {
-    setError("");
-    setSuccess("");
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
+    try {
+      setError("");
+      setSuccess("");
+      console.log("Attempting to register with:", data.email);
+      
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      console.log("Registration response:", { authData, error: signUpError });
+
+      if (signUpError) {
+        console.error("Registration error:", signUpError);
+        setError(signUpError.message);
+        return;
+      }
+
+      if (authData?.user) {
+        setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
+        
+        // Create initial profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{ user_id: authData.user.id }]);
+          
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+        }
+      }
+    } catch (e) {
+      console.error("Unexpected error during registration:", e);
+      setError("Terjadi kesalahan. Silakan coba lagi.");
     }
   };
 
@@ -50,7 +76,8 @@ export default function RegisterPage() {
             className="w-full border rounded px-3 py-2" autoComplete="new-password" />
           {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
         </div>
-        <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">
+        <button type="submit" disabled={isSubmitting} 
+          className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition disabled:opacity-50">
           {isSubmitting ? "Mendaftar..." : "Daftar"}
         </button>
         {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
