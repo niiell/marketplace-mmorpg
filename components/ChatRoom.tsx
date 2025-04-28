@@ -1,0 +1,161 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { supabase } from '../src/lib/supabaseClient';
+import { List, AutoSizer } from 'react-virtualized';
+
+interface Message {
+  id: number;
+  chat_id: number;
+  sender_id: number;
+  content: string;
+  created_at: string;
+}
+
+interface ChatRoomProps {
+  chatId: number;
+  currentUserId: number;
+}
+
+const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
+  const listRef = useRef<List>(null);
+
+  // Fetch initial messages
+  useEffect(() => {
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+      if (!error && data) setMessages(data as Message[]);
+    };
+    fetchMessages();
+  }, [chatId]);
+
+  // Subscribe to new messages
+  useEffect(() => {
+    const channel = supabase
+      .channel('chat-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId]);
+
+  // Fetch unread count
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const { count, error } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('chat_id', chatId)
+        .neq('sender_id', currentUserId);
+      if (!error && typeof count === 'number') setUnreadCount(count);
+    };
+    fetchUnread();
+  }, [chatId, currentUserId, messages]);
+
+  // Send message
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    await supabase.from('messages').insert({
+      chat_id: chatId,
+      sender_id: currentUserId,
+      content: input,
+    });
+    setInput('');
+  };
+
+  // Render each message
+  const rowRenderer = useCallback(
+    ({ index, key, style }: { index: number; key: string; style: React.CSSProperties }) => {
+      const msg = messages[index];
+      const isMine = msg.sender_id === currentUserId;
+      return (
+        <div
+          key={key}
+          style={style}
+          className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-2`}
+        >
+          <div
+            className={`rounded px-3 py-2 max-w-xs break-words ${
+              isMine ? 'bg-green-200 text-right' : 'bg-gray-200 text-left'
+            }`}
+          >
+            {msg.content}
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date(msg.created_at).toLocaleTimeString()}
+            </div>
+          </div>
+        </div>
+      );
+    },
+    [messages, currentUserId]
+  );
+
+  // Auto scroll to bottom on new message
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollToRow(messages.length - 1);
+    }
+  }, [messages]);
+
+  return (
+    <div className="flex flex-col h-full w-full max-w-lg mx-auto border rounded shadow bg-white">
+      <div className="flex items-center justify-between p-3 border-b">
+        <span className="font-semibold">Chat Room</span>
+        {unreadCount > 0 && (
+          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-2">
+            {unreadCount} Unread
+          </span>
+        )}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        <AutoSizer>
+          {({ height, width }: { height: number; width: number }) => (
+            <List
+              ref={listRef}
+              width={width}
+              height={height}
+              rowCount={messages.length}
+              rowHeight={70}
+              rowRenderer={rowRenderer}
+              overscanRowCount={5}
+            />
+          )}
+        </AutoSizer>
+      </div>
+      <div className="flex p-3 border-t gap-2">
+        <input
+          className="flex-1 border rounded px-3 py-2"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Type a message..."
+        />
+        <button
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          onClick={sendMessage}
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ChatRoom;
