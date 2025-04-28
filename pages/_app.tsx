@@ -1,6 +1,6 @@
 import '../src/app/globals.css';
 import type { AppProps } from 'next/app';
-import { NextIntlProvider } from 'next-intl';
+import { IntlProvider } from 'next-intl';
 
 // Sentry setup
 import * as Sentry from '@sentry/nextjs';
@@ -20,8 +20,8 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <NextIntlProvider messages={pageProps.messages} locale={pageProps.locale || 'id'}>
+    <IntlProvider messages={pageProps.messages} locale={pageProps.locale || 'id'}>
       <Component {...pageProps} />
-    </NextIntlProvider>
+    </IntlProvider>
   );
 }
