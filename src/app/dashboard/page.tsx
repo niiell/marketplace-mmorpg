@@ -150,18 +150,62 @@ function UserListings({ user }: any) {
 function UserTransactions({ user }: any) {
   const [trx, setTrx] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showReview, setShowReview] = useState<string | null>(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [reviewMsg, setReviewMsg] = useState("");
+  const [reviewedTrx, setReviewedTrx] = useState<{ [trxId: string]: boolean }>({});
+
   useEffect(() => {
-    supabase
-      .from('transactions')
-      .select('id, listing_id, amount, status_order, status_payment, created_at, buyer_id, seller_id')
-      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-      .not('status_order', 'in', '(approved,cancelled)')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setTrx(data || []);
-        setLoading(false);
-      });
+    const fetchTrx = async () => {
+      const { data } = await supabase
+        .from('transactions')
+        .select('id, listing_id, amount, status_order, status_payment, created_at, buyer_id, seller_id')
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+      setTrx(data || []);
+      setLoading(false);
+      // Fetch reviewed transactions
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('transaction_id')
+        .eq('reviewer_id', user.id);
+      const reviewed: { [trxId: string]: boolean } = {};
+      (reviews || []).forEach((r: any) => { reviewed[r.transaction_id] = true; });
+      setReviewedTrx(reviewed);
+    };
+    fetchTrx();
   }, [user.id]);
+
+  const handleReview = (trxId: string) => {
+    setShowReview(trxId);
+    setReviewForm({ rating: 5, comment: "" });
+    setReviewMsg("");
+  };
+
+  const submitReview = async (trx: any) => {
+    setReviewMsg("");
+    // Cek sudah review?
+    if (reviewedTrx[trx.id]) {
+      setReviewMsg("Anda sudah memberi review untuk transaksi ini.");
+      return;
+    }
+    // Simpan review
+    const { error } = await supabase.from('reviews').insert({
+      reviewer_id: user.id,
+      reviewee_id: user.id === trx.buyer_id ? trx.seller_id : trx.buyer_id,
+      transaction_id: trx.id,
+      rating: reviewForm.rating,
+      comment: reviewForm.comment,
+    });
+    if (!error) {
+      setReviewMsg("Review berhasil disimpan!");
+      setReviewedTrx({ ...reviewedTrx, [trx.id]: true });
+      setShowReview(null);
+    } else {
+      setReviewMsg("Gagal menyimpan review.");
+    }
+  };
+
   if (loading) return <div>Loading transaksi...</div>;
   return (
     <div>
@@ -176,6 +220,7 @@ function UserTransactions({ user }: any) {
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Sebagai</th>
               <th className="px-3 py-2">Tanggal</th>
+              <th className="px-3 py-2">Review</th>
             </tr>
           </thead>
           <tbody>
@@ -187,10 +232,42 @@ function UserTransactions({ user }: any) {
                 <td className="px-3 py-2 text-center">{t.status_order}</td>
                 <td className="px-3 py-2 text-center">{t.buyer_id === user.id ? 'Pembeli' : 'Penjual'}</td>
                 <td className="px-3 py-2 text-xs">{new Date(t.created_at).toLocaleString()}</td>
+                <td className="px-3 py-2 text-center"></td>
+                  {t.status_order === 'approved' && !reviewedTrx[t.id] && (
+                    <button onClick={() => handleReview(t.id)} className="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600">Review</button>
+                  )}
+                  {reviewedTrx[t.id] && <span className="text-green-600 text-xs">Sudah review</span>}
+                  {showReview === t.id && (
+                    <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center bg-black/40 z-50">
+                      <div className="bg-white rounded shadow p-6 max-w-xs w-full">
+                        <h4 className="font-bold mb-2">Beri Review</h4>
+                        <div className="flex gap-1 mb-2">
+                          {[1,2,3,4,5].map((n) => (
+                            <button key={n} type="button" onClick={() => setReviewForm(f => ({...f, rating: n}))}>
+                              <span className={reviewForm.rating >= n ? "text-yellow-400 text-2xl" : "text-gray-300 text-2xl"}>★</span>
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          className="w-full border rounded px-2 py-1 mb-2"
+                          rows={2}
+                          placeholder="Komentar (opsional)"
+                          value={reviewForm.comment}
+                          onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => submitReview(t)} className="bg-blue-600 text-white px-3 py-1 rounded text-xs">Kirim</button>
+                          <button onClick={() => setShowReview(null)} className="bg-gray-300 px-3 py-1 rounded text-xs">Batal</button>
+                        </div>
+                        {reviewMsg && <div className="text-xs text-red-600 mt-2">{reviewMsg}</div>}
+                      </div>
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
             {trx.length === 0 && (
-              <tr><td colSpan={6} className="text-gray-500 text-center py-4">Tidak ada transaksi aktif.</td></tr>
+              <tr><td colSpan={7} className="text-gray-500 text-center py-4">Tidak ada transaksi aktif.</td></tr>
             )}
           </tbody>
         </table>
@@ -340,7 +417,7 @@ function AdminPending() {
       {showDetail && detailTrx && (
         <Dialog open={showDetail} onClose={() => setShowDetail(false)} className="fixed z-50 inset-0 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-          <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full p-6 z-10">
+          <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full p-6 z-10"></div>
             <h3 className="text-lg font-bold mb-2">Detail Transaksi</h3>
             <div className="mb-2 text-sm text-gray-700">
               <div><b>ID:</b> {detailTrx.id}</div>
@@ -357,7 +434,7 @@ function AdminPending() {
               <ul className="text-xs text-gray-600 list-disc ml-5 mt-1">
                 {detailLog.length === 0 && <li>Belum ada log aksi.</li>}
                 {detailLog.map((log) => (
-                  <li key={log.id}>
+                  <li key={log.id}></li>
                     <span className="font-semibold">[{log.action}]</span> {log.note} oleh <span className="font-mono">{log.performed_by}</span> <span className="ml-2 text-gray-400">({new Date(log.created_at).toLocaleString()})</span>
                   </li>
                 ))}
@@ -447,7 +524,7 @@ function AdminUsers() {
         className="mb-4 border px-3 py-2 rounded w-full max-w-xs"
       />
       {actionMsg && <div className="mb-2 text-green-700">{actionMsg}</div>}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto"></div>
         <table className="min-w-full bg-white rounded shadow">
           <thead>
             <tr className="bg-blue-100 text-blue-900">
@@ -460,7 +537,7 @@ function AdminUsers() {
           </thead>
           <tbody>
             {filteredUsers.map((u) => (
-              <tr key={u.user_id} className="border-b">
+              <tr key={u.user_id} className="border-b"></tr>
                 <td className="px-3 py-2">{u.user_id}</td>
                 <td className="px-3 py-2">{u.username}</td>
                 <td className="px-3 py-2 text-center">{u.role}</td>

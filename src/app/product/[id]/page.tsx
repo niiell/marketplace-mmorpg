@@ -10,6 +10,8 @@ export default function ProductDetailPage() {
   const { id } = router.query;
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -38,6 +40,25 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
+  useEffect(() => {
+    if (id) {
+      const fetchReviews = async (sellerId: string) => {
+        const { data: reviewList } = await supabase
+          .from("reviews")
+          .select("rating, comment, reviewer_id, created_at")
+          .eq("reviewee_id", sellerId);
+        setReviews(reviewList || []);
+        if (reviewList && reviewList.length > 0) {
+          const avg = reviewList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewList.length;
+          setAvgRating(avg);
+        } else {
+          setAvgRating(null);
+        }
+      };
+      if (product?.seller?.id) fetchReviews(product.seller.id);
+    }
+  }, [id, product?.seller?.id]);
+
   if (loading) return <div className="text-center py-12">Loading...</div>;
 
   if (!product) return <div className="text-center py-12">Produk tidak ditemukan.</div>;
@@ -63,6 +84,14 @@ export default function ProductDetailPage() {
         <div>
           <p className="text-lg text-gray-700 mb-4">{product.description}</p>
           <p className="text-2xl font-bold text-blue-700 mb-6">Rp {product.price}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-semibold">Rating Penjual:</span>
+            {avgRating !== null ? (
+              <span className="text-yellow-500 font-bold">{avgRating.toFixed(2)} ★</span>
+            ) : (
+              <span className="text-gray-400">Belum ada rating</span>
+            )}
+          </div>
           <div className="flex gap-4 product-action">
             <NextUIButton color="primary" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
               Chat dengan Penjual
@@ -77,15 +106,17 @@ export default function ProductDetailPage() {
       {/* Reviews */}
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-4">Ulasan</h2>
-        {product.reviews?.length > 0 ? (
+        {reviews.length > 0 ? (
           <div className="space-y-4">
-            {product.reviews.map((review: any) => (
-              <Card key={review.id} shadow="sm">
-                <CardBody>
-                  <p className="text-gray-800 italic">"{review.comment}"</p>
-                  <p className="text-sm text-gray-600 mt-2">- {review.reviewer_id}</p>
-                </CardBody>
-              </Card>
+            {reviews.map((review: any, idx: number) => (
+              <div key={idx} className="bg-gray-100 p-4 rounded-lg shadow">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-yellow-500">{'★'.repeat(review.rating)}</span>
+                  <span className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString()}</span>
+                </div>
+                <p className="text-gray-800 italic">"{review.comment}"</p>
+                <p className="text-sm text-gray-600 mt-2">- {review.reviewer_id}</p>
+              </div>
             ))}
           </div>
         ) : (
