@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({
   email: z.string().email({ message: "Email tidak valid" }),
@@ -14,6 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -26,6 +28,7 @@ export default function RegisterPage() {
       setSuccess("");
       console.log("Attempting to register with:", data.email);
       
+      // 1. Sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -34,7 +37,7 @@ export default function RegisterPage() {
         }
       });
 
-      console.log("Registration response:", { authData, error: signUpError });
+      console.log("Registration response:", { authData });
 
       if (signUpError) {
         console.error("Registration error:", signUpError);
@@ -43,15 +46,32 @@ export default function RegisterPage() {
       }
 
       if (authData?.user) {
-        setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
-        
-        // Create initial profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([{ user_id: authData.user.id }]);
+        try {
+          // 2. Create initial profile with RLS policy
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert([{ 
+              user_id: authData.user.id,
+              username: data.email.split("@")[0], // Set default username from email
+              created_at: new Date().toISOString()
+            }]);
           
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
+          if (profileError) {
+            console.error("Profile creation error details:", profileError);
+            // Don't return here, still show success message since user was created
+          }
+          
+          setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
+          
+          // Optional: Redirect to login page after successful registration
+          setTimeout(() => {
+            router.push("/login");
+          }, 2000);
+          
+        } catch (profileErr) {
+          console.error("Unexpected profile creation error:", profileErr);
+          // Still show success since user was created
+          setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
         }
       }
     } catch (e) {
