@@ -17,6 +17,7 @@
     "next": "15.3.1",
     "next-contentlayer": "^0.3.4",
     "next-intl": "^4.1.0",
+    "next-pwa": "^5.6.0",
     "next-seo": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

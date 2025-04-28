@@ -1,6 +1,8 @@
-import type { NextConfig } from "next";
+const withPWA = require('next-pwa').default;
+const runtimeCaching = require('next-pwa/cache');
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = withPWA({
   async headers() {
     return [
       {
@@ -15,10 +17,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  pwa: {
+    dest: 'public',
+    runtimeCaching,
+    disable: process.env.NODE_ENV === 'development',
+  },
   i18n: {
     locales: ['en', 'id', 'th'],
     defaultLocale: 'id',
   },
-};
+});
 
-export default nextConfig;
+module.exports = nextConfig;
