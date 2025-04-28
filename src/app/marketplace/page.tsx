@@ -1,46 +1,70 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import gsap from "gsap";
 import { Card, CardBody, CardFooter, Input, Select, SelectItem, Button } from "@nextui-org/react";
 
+const PAGE_SIZE = 12;
+
 export default function MarketplacePage() {
   const [listings, setListings] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { register, handleSubmit, watch } = useForm();
 
   const [filter, setFilter] = useState({
     title: "",
     category_id: "",
+    game_id: "",
     minPrice: "",
     maxPrice: "",
     minRating: ""
   });
 
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loader = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     supabase.from("categories").select("id, name").then(({ data }) => {
       setCategories(data || []);
     });
+    supabase.from("games").select("id, name").then(({ data }) => {
+      setGames(data || []);
+    });
   }, []);
 
-  const fetchListings = async (filters = {}) => {
+  const fetchListings = async (filters = {}, pageNum = 1, append = false) => {
     setLoading(true);
-    let query = supabase.from("listings").select("id, title, price, image_url, category_id, rating");
-    if (filters.title) query = query.ilike("title", `%${filters.title}%`);
+    let query = supabase
+      .from("listings")
+      .select("id, title, price, image_url, category_id, game_id, rating, description")
+      .range((pageNum - 1) * PAGE_SIZE, pageNum * PAGE_SIZE - 1);
+    // Full-text search
+    if (filters.title) query = query.textSearch("title,description", filters.title, { type: 'websearch' });
     if (filters.category_id) query = query.eq("category_id", filters.category_id);
+    if (filters.game_id) query = query.eq("game_id", filters.game_id);
     if (filters.minPrice) query = query.gte("price", filters.minPrice);
     if (filters.maxPrice) query = query.lte("price", filters.maxPrice);
     if (filters.minRating) query = query.gte("rating", filters.minRating);
     const { data, error } = await query;
-    if (!error) setListings(data || []);
+    if (!error) {
+      if (append) {
+        setListings((prev) => [...prev, ...(data || [])]);
+      } else {
+        setListings(data || []);
+      }
+      setHasMore((data?.length || 0) === PAGE_SIZE);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchListings(filter);
+    setPage(1);
+    fetchListings(filter, 1, false);
   }, [filter]);
 
   const onFilter = (data: any) => {
@@ -61,10 +85,25 @@ export default function MarketplacePage() {
     });
   }, [listings]);
 
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        fetchListings(filter, page + 1, true);
+        setPage((p) => p + 1);
+      }
+    }, { threshold: 1 });
+    if (loader.current) observer.observe(loader.current);
+    return () => {
+      if (loader.current) observer.unobserve(loader.current);
+    };
+  }, [loader, hasMore, loading, filter, page]);
+
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
       <h1 className="text-3xl font-bold mb-6">Marketplace</h1>
-      <form onSubmit={handleSubmit(onFilter)} className="mb-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+      <form onSubmit={handleSubmit(onFilter)} className="mb-8 grid grid-cols-1 md:grid-cols-6 gap-4">
         <Input
           type="text"
           placeholder="Cari item..."
@@ -77,13 +116,30 @@ export default function MarketplacePage() {
             <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
           ))}
         </Select>
+        <Select {...register("game_id")} placeholder="Game" className="col-span-1">
+          <SelectItem key="" value="">Semua Game</SelectItem>
+          {games.map((game: any) => (
+            <SelectItem key={game.id} value={game.id}>{game.name}</SelectItem>
+          ))}
+        </Select>
         <Input type="number" min={0} placeholder="Harga Min" {...register("minPrice")} className="col-span-1" />
         <Input type="number" min={0} placeholder="Harga Max" {...register("maxPrice")} className="col-span-1" />
         <Input type="number" min={1} max={5} placeholder="Min Rating" {...register("minRating")} className="col-span-1" />
         <Button type="submit" color="primary" className="col-span-1">Filter</Button>
       </form>
-      {loading ? (
-        <p>Loading...</p>
+      {loading && listings.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-72 w-full">
+              <div className="h-1/2 bg-gray-300 rounded-t-lg" />
+              <div className="p-4 space-y-2">
+                <div className="h-4 bg-gray-300 rounded w-2/3" />
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="h-3 bg-gray-200 rounded w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {listings.map((item) => (
@@ -113,6 +169,9 @@ export default function MarketplacePage() {
           ))}
         </div>
       )}
+      <div ref={loader} />
+      {loading && listings.length > 0 && <p className="text-center mt-4">Loading more...</p>}
+      {!hasMore && !loading && listings.length > 0 && <p className="text-center mt-4">Semua data sudah ditampilkan.</p>}
     </div>
   );
 }

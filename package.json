@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
     "@supabase/supabase-js": "^2.49.4",
     "contentlayer": "^0.3.4",
     "gsap": "^3.12.7",
@@ -16,7 +17,10 @@
     "next-contentlayer": "^0.3.4",
     "next-seo": "^6.6.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.1",
+    "swiper": "^11.2.6",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

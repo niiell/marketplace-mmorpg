@@ -4,6 +4,7 @@ import "./globals.css";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { DefaultSeo } from 'next-seo';
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -103,6 +104,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Navbar />
         <NotificationToaster />
         {children}
       </body>
