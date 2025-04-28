@@ -1,16 +1,12 @@
 const withPWA = require('next-pwa');
 const runtimeCaching = require('next-pwa/cache');
 
-const pwaConfig = withPWA({
+const nextConfig = withPWA({
   pwa: {
     dest: 'public',
     runtimeCaching,
     disable: process.env.NODE_ENV === 'development',
   },
-});
-
-const nextConfig = {
-  ...pwaConfig,
   async headers() {
     return [
       {
@@ -25,6 +21,14 @@ const nextConfig = {
       },
     ];
   },
-};
+  async rewrites() {
+    return [
+      {
+        source: '/',
+        destination: '/landing',
+      },
+    ];
+  },
+});
 
 module.exports = nextConfig;
