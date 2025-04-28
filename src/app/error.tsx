@@ -1,21 +1,15 @@
-"use client";
-import { useEffect } from "react";
-
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }, reset: () => void }) {
-  useEffect(() => {
-    // Log error ke monitoring jika perlu
-    // console.error(error);
-  }, [error]);
-
   return (
     <html>
-      <body className="flex flex-col items-center justify-center min-h-screen bg-red-50">
-        <h2 className="text-2xl font-bold text-red-700 mb-4">Terjadi Error</h2>
-        <p className="mb-2 text-red-600">{error?.message || "Unknown error"}</p>
-        <pre className="text-xs text-gray-500 bg-gray-100 p-2 rounded max-w-xl overflow-x-auto">
+      <body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#fef2f2' }}>
+        <h2 style={{ color: '#b91c1c', fontWeight: 'bold', fontSize: '2rem', marginBottom: '1rem' }}>Terjadi Error</h2>
+        <p style={{ color: '#dc2626', marginBottom: '0.5rem' }}>{error?.message || "Unknown error"}</p>
+        <pre style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.5rem', borderRadius: '0.25rem', maxWidth: 600, overflowX: 'auto' }}>
           {error?.stack || "No stacktrace"}
         </pre>
-        <button onClick={() => reset()} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Coba Lagi</button>
+        <form>
+          <button type="submit" onClick={() => reset()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: '#2563eb', color: 'white', borderRadius: '0.25rem' }}>Coba Lagi</button>
+        </form>
       </body>
     </html>
   );
