@@ -1,30 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    // Optional: Verifikasi signature Xendit di sini
-    const { external_id, status } = body;
-    if (!external_id || !status) return NextResponse.json({ error: 'Invalid webhook' }, { status: 400 });
-    if (!external_id.startsWith('trx-')) return NextResponse.json({ error: 'Not a transaction' }, { status: 400 });
-    const trxId = external_id.replace('trx-', '');
-
-    if (status === 'PAID') {
-      // Update transaksi ke paid
-      await supabase.from('transactions').update({
-        status_payment: 'paid',
-        status_order: 'paid',
-        updated_at: new Date().toISOString(),
-      }).eq('id', trxId);
-      // (Opsional) Tambah log transaksi
-      // await supabase.from('transaction_logs').insert({ transaction_id: trxId, action: 'payment_paid', note: 'Xendit webhook' });
-    }
-    // Bisa handle status lain (EXPIRED, FAILED, dsb) jika perlu
-    return NextResponse.json({ success: true });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });
+  // Xendit signature verification (simple token header, adjust as needed)
+  const signature = req.headers.get("x-callback-token") || "";
+  if (signature !== process.env.XENDIT_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
+  const event = await req.json();
+  if (event.status === "PAID" && event.external_id) {
+    const trxId = event.external_id.replace("trx-", "");
+    // Update transaction status
+    await supabase
+      .from("transactions")
+      .update({ status_order: "PAID", status_payment: "PAID" })
+      .eq("id", trxId);
+    // Get transaction to find seller_id
+    const { data: trx } = await supabase
+      .from("transactions")
+      .select("seller_id")
+      .eq("id", trxId)
+      .single();
+    if (trx && trx.seller_id) {
+      // Insert notification for seller
+      await supabase.from("notifications").insert({
+        user_id: trx.seller_id,
+        type: "payment",
+        content: "Pembayaran diterima, silakan proses pesanan.",
+        url_target: "/dashboard"
+      });
+    }
+  }
+  return NextResponse.json({ received: true });
 }
