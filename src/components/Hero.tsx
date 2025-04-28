@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
@@ -15,7 +16,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[60vh] py-16 text-center bg-gradient-to-b from-[#1a1833] to-[#232046] text-white">
+    <section className="flex flex-col items-center justify-center min-h-[60vh] py-16 text-center bg-gradient-to-b from-[#1a1833] to-[#232046] text-white">
       <div ref={textRef}>
         <h1 className="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
           Marketplace MMORPG SEA
