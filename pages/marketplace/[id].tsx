@@ -7,6 +7,12 @@ import BuyButton from '@/components/BuyButton';
 
 export default function ListingDetail({ listing, reviews }: any) {
   if (!listing) return <div>Not found</div>;
+
+  // Calculate average rating
+  const avgRating = reviews && reviews.length > 0
+    ? reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / reviews.length
+    : null;
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="grid md:grid-cols-2 gap-8">
@@ -32,20 +38,36 @@ export default function ListingDetail({ listing, reviews }: any) {
       </div>
       <div className="mt-10">
         <h2 className="text-xl font-bold mb-4">Ulasan</h2>
+        {avgRating && (
+          <div className="flex items-center mb-2">
+            <span className="text-yellow-500 mr-2">
+              {'★'.repeat(Math.round(avgRating))}
+              {'☆'.repeat(5 - Math.round(avgRating))}
+            </span>
+            <span className="text-sm text-gray-600">({reviews.length} ulasan)</span>
+          </div>
+        )}
         {reviews.length === 0 ? (
           <div>Belum ada ulasan.</div>
         ) : (
           <ul>
             {reviews.map((r: any) => (
-              <li key={r.id} className="mb-2 border-b pb-2">
-                <div className="font-semibold">Rating: {r.rating} ⭐</div>
-                <div>{r.comment}</div>
-              </li>
+              <ReviewCard key={r.id} review={r} />
             ))}
           </ul>
         )}
       </div>
     </div>
+  );
+}
+
+// ReviewCard component
+function ReviewCard({ review }: { review: any }) {
+  return (
+    <li className="mb-2 border-b pb-2">
+      <div className="font-semibold">Rating: {review.rating} ⭐</div>
+      <div>{review.comment}</div>
+    </li>
   );
 }
 
