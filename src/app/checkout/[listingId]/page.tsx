@@ -7,7 +7,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function CheckoutPage({ params }: { params: { listingId: string } }) {
+type PageProps = {
+  params: {
+    listingId: string;
+  };
+};
+
+export default function CheckoutPage({ params }: PageProps) {
   const router = useRouter();
   useEffect(() => {
     const startCheckout = async () => {
