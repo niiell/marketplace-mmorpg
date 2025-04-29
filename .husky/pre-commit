@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run axe-core accessibility checks before commit
+sh ./tools/precommit-axe.sh
