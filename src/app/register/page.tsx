@@ -56,12 +56,13 @@ export default function RegisterPage() {
               created_at: new Date().toISOString()
             }]);
           
-          if (profileError) {
-            console.error("Profile creation error details:", profileError);
-            // Don't return here, still show success message since user was created
-          }
+if (profileError) {
+  console.error("Profile creation error details:", JSON.stringify(profileError, null, 2));
+  setError("Gagal membuat profil pengguna. Silakan coba lagi.");
+  return; // Stop further execution to avoid showing success message
+}
           
-          setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
+setSuccess("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
           
           // Optional: Redirect to login page after successful registration
           setTimeout(() => {
