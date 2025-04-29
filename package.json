@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:axe": "start-server-and-test dev http://localhost:3000 \"sh ./tools/precommit-axe.sh\"",
+    "test:axe": "start-server-and-test dev http://localhost:${PORT:-3000} \"sh ./tools/precommit-axe.sh\"",
     "test:axe:ci": "start-server-and-test start http://localhost:3000 \"npx axe http://localhost:3000 --exit\"",
     "test:a11y": "npm run test:axe && npm run lighthouse",
     "lighthouse": "lhci autorun",
