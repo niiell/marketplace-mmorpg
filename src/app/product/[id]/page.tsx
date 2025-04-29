@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../src/lib/supabase';
 import gsap from "gsap";
 import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/react";
 import { NextSeo } from 'next-seo';

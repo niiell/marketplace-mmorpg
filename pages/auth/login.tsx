@@ -1,6 +1,6 @@
 // filepath: pages/auth/login.tsx
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../src/lib/supabase';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 

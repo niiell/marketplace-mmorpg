@@ -1,5 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '../../src/lib/supabase';
 import Gallery from 'src/components/Gallery';
 import ChatButton from 'src/components/ChatButton';
 import BuyButton from 'src/components/BuyButton';
