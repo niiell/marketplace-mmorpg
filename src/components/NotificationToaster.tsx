@@ -36,16 +36,21 @@ export default function NotificationToaster({ message, type, duration = 3000, on
   }[type];
 
   return (
-    <button
-      role="status"
-      className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue'}-400`}
-      onClick={handleClose}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      aria-label={`${type} notification: ${message}`}
+    <div
+      role="alert"
+      className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2`}
+      aria-live="polite"
+      aria-atomic="true"
     >
       <span>{message}</span>
-      <span aria-hidden="true" className="ml-2">&times;</span>
-    </button>
+      <button
+        onClick={handleClose}
+        onKeyDown={handleKeyDown}
+        className="ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white p-1 hover:opacity-80"
+        aria-label="Close notification"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
   );
 }

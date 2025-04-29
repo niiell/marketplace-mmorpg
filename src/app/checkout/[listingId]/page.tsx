@@ -8,14 +8,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-interface CheckoutPageProps {
+type PageProps = {
   params: {
     listingId: string;
   };
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export default function CheckoutPage({ params }: CheckoutPageProps) {
+export default function CheckoutPage({ params }: PageProps) {
   const router = useRouter();
   
   useEffect(() => {
@@ -67,7 +67,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       }
     };
     startCheckout();
-    // eslint-disable-next-line
   }, [params.listingId, router]);
 
   return (
