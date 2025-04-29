@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const { data: userList, error: userError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1,
+      // @ts-ignore
       filter: `id=eq.${buyer_id}`
     });
     const payer_email = userList?.users?.[0]?.email;

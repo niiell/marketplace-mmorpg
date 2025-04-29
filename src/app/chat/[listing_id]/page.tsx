@@ -27,7 +27,8 @@ const fetcher = async (listing_id: string) => {
 };
 
 export default function ChatPage() {
-  const { listing_id } = useParams();
+  const params = useParams();
+  const listing_id = Array.isArray(params?.listing_id) ? params.listing_id[0] : params?.listing_id;
   const [unread, setUnread] = useState(0);
   const { register, handleSubmit, reset } = useForm();
   const [sending, setSending] = useState(false);
