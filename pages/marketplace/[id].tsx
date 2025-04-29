@@ -1,9 +1,8 @@
-// filepath: pages/marketplace/[id].tsx
 import { GetStaticPaths, GetStaticProps } from 'next';
-import { supabase } from '@/lib/supabaseClient';
-import Gallery from '@/components/Gallery';
-import ChatButton from '@/components/ChatButton';
-import BuyButton from '@/components/BuyButton';
+import { supabase } from 'src/lib/supabase';
+import Gallery from 'src/components/Gallery';
+import ChatButton from 'src/components/ChatButton';
+import BuyButton from 'src/components/BuyButton';
 
 export default function ListingDetail({ listing, reviews }: any) {
   if (!listing) return <div>Not found</div>;

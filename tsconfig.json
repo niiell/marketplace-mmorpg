@@ -18,13 +18,14 @@
     "jsx": "preserve",
     "incremental": true,
     "noImplicitAny": false,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": [
+      "*": [
         "./src/*"
       ]
     },
