@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Navbar from "@/components/Navbar";
-import NotificationToaster from "@/components/NotificationToaster";
 import { initializeAxe } from "@/utils/axe-core";
 
 function ErrorFallback({ error }: { error: Error }) {
@@ -22,7 +21,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Navbar />
-      <NotificationToaster />
       {children}
     </ErrorBoundary>
   );

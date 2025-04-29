@@ -6,6 +6,15 @@ import { useForm } from "react-hook-form";
 import gsap from "gsap";
 import { Card, CardBody, CardFooter, Input, Select, SelectItem, Button } from "@nextui-org/react";
 
+interface FilterParams {
+  title?: string;
+  category_id?: string;
+  game_id?: string;
+  minPrice?: string | number;
+  maxPrice?: string | number;
+  minRating?: string | number;
+}
+
 const PAGE_SIZE = 12;
 
 export default function MarketplacePage() {
@@ -15,7 +24,7 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
   const { register, handleSubmit, watch } = useForm();
 
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<FilterParams>({
     title: "",
     category_id: "",
     game_id: "",
@@ -37,7 +46,7 @@ export default function MarketplacePage() {
     });
   }, []);
 
-  const fetchListings = async (filters = {}, pageNum = 1, append = false) => {
+  const fetchListings = async (filters: FilterParams = {}, pageNum = 1, append = false) => {
     setLoading(true);
     let query = supabase
       .from("listings")
@@ -67,7 +76,7 @@ export default function MarketplacePage() {
     fetchListings(filter, 1, false);
   }, [filter]);
 
-  const onFilter = (data: any) => {
+  const onFilter = (data: FilterParams) => {
     setFilter({
       ...filter,
       ...data
