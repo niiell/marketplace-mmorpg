@@ -16,6 +16,7 @@ export default [
   },
   js.configs.recommended,
   ...compat.extends('next/core-web-vitals'),
+  ...compat.extends('plugin:jsx-a11y/recommended'),
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -24,7 +25,14 @@ export default [
       '@next/next/no-img-element': 'off',
       'react-hooks/exhaustive-deps': 'warn',
       'no-unused-vars': 'off',
-      'no-undef': 'off'
+      'no-undef': 'off',
+      // A11y rules
+      'jsx-a11y/anchor-is-valid': 'error',
+      'jsx-a11y/aria-props': 'error',
+      'jsx-a11y/aria-proptypes': 'error',
+      'jsx-a11y/aria-unsupported-elements': 'error',
+      'jsx-a11y/role-has-required-aria-props': 'error',
+      'jsx-a11y/role-supports-aria-props': 'error'
     },
     env: {
       browser: true,

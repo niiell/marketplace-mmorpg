@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:axe": "start-server-and-test dev http://localhost:3000 \"npx axe http://localhost:3000 --save axe-report.json\""
+    "test:axe": "start-server-and-test dev http://localhost:3000 \"sh ./tools/precommit-axe.sh\"",
+    "test:axe:ci": "start-server-and-test start http://localhost:3000 \"npx axe http://localhost:3000 --exit\"",
+    "test:a11y": "npm run test:axe && npm run lighthouse",
+    "lighthouse": "lhci autorun",
+    "lighthouse:a11y": "lighthouse http://localhost:3000 --only-categories=accessibility --output=json --output-path=./lighthouse-a11y-report.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -53,8 +57,10 @@
     "cypress": "^14.3.2",
     "eslint": "^9.25.1",
     "eslint-config-next": "15.3.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "start-server-and-test": "^2.0.11",
     "tailwindcss": "^4",
     "ts-jest": "^29.3.2",
     "typescript": "^5"

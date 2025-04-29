@@ -24,7 +24,6 @@ async function getMessages(locale: string) {
     return (await import(`../../locales/${locale}.json`)).default;
   } catch (error) {
     console.error(`Failed to load messages for locale: ${locale}`, error);
-    // Return empty object on error to prevent undefined
     return {};
   }
 }
