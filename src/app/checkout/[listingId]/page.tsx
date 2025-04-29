@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -7,14 +8,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-type PageProps = {
+interface CheckoutPageProps {
   params: {
     listingId: string;
   };
-};
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
-export default function CheckoutPage({ params }: PageProps) {
+export default function CheckoutPage({ params }: CheckoutPageProps) {
   const router = useRouter();
+  
   useEffect(() => {
     const startCheckout = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -65,7 +68,8 @@ export default function CheckoutPage({ params }: PageProps) {
     };
     startCheckout();
     // eslint-disable-next-line
-  }, [params.listingId]);
+  }, [params.listingId, router]);
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-xl font-bold">Mempersiapkan pembayaran...</div>
