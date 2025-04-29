@@ -45,14 +45,14 @@ export default function LoginPage() {
       <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block mb-1">Email</label>
-          <input type="email" {...register("email")}
+          <label htmlFor="email" className="block mb-1">Email</label>
+          <input id="email" type="email" {...register("email")}
             className="w-full border rounded px-3 py-2" autoComplete="email" />
           {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
         </div>
         <div>
-          <label className="block mb-1">Password</label>
-          <input type="password" {...register("password")}
+          <label htmlFor="password" className="block mb-1">Password</label>
+          <input id="password" type="password" {...register("password")}
             className="w-full border rounded px-3 py-2" autoComplete="current-password" />
           {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
         </div>
