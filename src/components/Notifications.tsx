@@ -1,94 +1,77 @@
-import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-interface NotificationsProps {
-  currentUserId: string;
+interface Notification {
+  id: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
 }
 
-export default function Notifications({ currentUserId }: NotificationsProps) {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unread, setUnread] = useState(0);
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+export default function Notifications() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUserId) return;
-    // Fetch unread notifications
-    const fetchNotif = async () => {
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false });
-      setNotifications(data || []);
-      setUnread((data || []).length);
-    };
-    fetchNotif();
-    // Subscribe to realtime notification
-    const channel = supabase
-      .channel(`user-notif-${currentUserId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUserId}` },
-        (payload) => {
-          setNotifications((prev) => [payload.new, ...prev]);
-          setUnread((u) => u + 1);
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [currentUserId]);
+    fetchNotifications();
+  }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
+  const fetchNotifications = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-  const handleNotifClick = async (notif: any) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
-    setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
-    setUnread((u) => Math.max(0, u - 1));
-    if (notif.url_target) window.location.href = notif.url_target;
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    setNotifications(data || []);
+    setIsLoading(false);
   };
 
+  const markAsRead = async (id: string) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id);
+
+    setNotifications(notifications.map(n =>
+      n.id === id ? { ...n, is_read: true } : n
+    ));
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, id: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      markAsRead(id);
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading notifications...</div>;
+  }
+
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button onClick={() => setOpen((o) => !o)} className="relative">
-        <span className="material-icons">notifications</span>
-        {unread > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
-            {unread}
-          </span>
-        )}
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
-          <div className="p-2 font-bold border-b">Notifikasi</div>
-          {notifications.length === 0 ? (
-            <div className="p-4 text-gray-500 text-center">Tidak ada notifikasi baru.</div>
-          ) : (
-            <ul>
-              {notifications.map((notif) => (
-                <li
-                  key={notif.id}
-                  className="px-4 py-3 border-b hover:bg-blue-50 cursor-pointer"
-                  onClick={() => handleNotifClick(notif)}
-                >
-                  <div className="font-semibold text-blue-700 mb-1">{notif.type || 'Notifikasi'}</div>
-                  <div>{notif.content}</div>
-                  <div className="text-xs text-gray-400 mt-1">{new Date(notif.created_at).toLocaleString()}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+    <div className="space-y-4">
+      {notifications.length === 0 ? (
+        <p>No notifications</p>
+      ) : (
+        notifications.map(notification => (
+          <button
+            key={notification.id}
+            onClick={() => markAsRead(notification.id)}
+            onKeyDown={(e) => handleKeyDown(e, notification.id)}
+            className={`block w-full text-left p-4 rounded-lg shadow ${
+              notification.is_read ? 'bg-gray-50' : 'bg-white border-l-4 border-blue-500'
+            }`}
+            aria-label={`${notification.message}${notification.is_read ? ' (read)' : ' (unread)'}`}
+          >
+            <p className="text-gray-800">{notification.message}</p>
+            <time className="text-sm text-gray-500">
+              {new Date(notification.created_at).toLocaleDateString()}
+            </time>
+          </button>
+        ))
       )}
     </div>
   );
