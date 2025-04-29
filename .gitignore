@@ -45,3 +45,5 @@ next-env.d.ts
 .contentlayer
 
 tes.txt
+.env.local
+public/sw.js

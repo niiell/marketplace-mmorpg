@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from '@/lib/supabase';
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import gsap from "gsap";
