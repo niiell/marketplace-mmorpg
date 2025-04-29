@@ -87,18 +87,20 @@ export default function MarketplacePage() {
 
   // Infinite scroll observer
   useEffect(() => {
-    if (!hasMore || loading) return;
+    const currentLoader = loader.current;
+
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0].isIntersecting && hasMore && !loading) {
         fetchListings(filter, page + 1, true);
         setPage((p) => p + 1);
       }
     }, { threshold: 1 });
-    if (loader.current) observer.observe(loader.current);
+
+    if (currentLoader) observer.observe(currentLoader);
     return () => {
-      if (loader.current) observer.unobserve(loader.current);
+      if (currentLoader) observer.unobserve(currentLoader);
     };
-  }, [loader, hasMore, loading, filter, page]);
+  }, [hasMore, loading, filter, page]);
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">

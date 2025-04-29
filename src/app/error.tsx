@@ -2,7 +2,7 @@
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }, reset: () => void }) {
   return (
-    <html>
+    <html lang="id">
       <body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#fef2f2' }}>
         <h2 style={{ color: '#b91c1c', fontWeight: 'bold', fontSize: '2rem', marginBottom: '1rem' }}>Terjadi Error</h2>
         <p style={{ color: '#dc2626', marginBottom: '0.5rem' }}>{error?.message || "Unknown error"}</p>
