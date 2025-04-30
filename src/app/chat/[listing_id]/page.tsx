@@ -77,7 +77,31 @@ export default function ChatPage() {
     });
     setSending(false);
     if (error) toast.error("Gagal mengirim pesan");
-    else reset();
+    else {
+      reset();
+      // Send message to AI chatbot API
+      try {
+        const response = await fetch("/api/chatbot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: form.content }),
+        });
+        const json = await response.json();
+        if (json.message) {
+          // Insert AI response as a message from system (sender_id = 0)
+          await supabase.from("messages").insert({
+            chat_id: data.chat.id,
+            sender_id: 0,
+            content: json.message,
+          });
+          mutate();
+        } else if (json.error) {
+          toast.error("AI Chatbot error: " + json.error);
+        }
+      } catch (err) {
+        toast.error("Failed to get AI response");
+      }
+    }
   };
 
   if (!data) return <div className="text-center py-12">Loading chat...</div>;

@@ -8,6 +8,8 @@ export default function ListingCard({ listing }: { listing: any }) {
   const { currency } = useCurrency();
   const locale = currency === "IDR" ? "id-ID" : currency === "PHP" ? "en-PH" : currency === "THB" ? "th-TH" : "en-US";
 
+import WishlistButton from "./WishlistButton";
+
   return (
     <Link href={`/marketplace/${listing.id}`}>
       <div className="bg-white rounded shadow p-4 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
@@ -36,6 +38,9 @@ export default function ListingCard({ listing }: { listing: any }) {
         {listing.description && (
           <p className="text-gray-600 text-sm mb-2 line-clamp-2">{listing.description}</p>
         )}
+        <div className="flex justify-end mt-2">
+          <WishlistButton listingId={listing.id} />
+        </div>
         {listing.seller && (
           <div className="flex items-center gap-2 mt-2">
             {listing.seller.avatar_url && (

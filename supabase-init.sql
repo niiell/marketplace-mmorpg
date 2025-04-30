@@ -125,6 +125,15 @@ create table if not exists notifications (
   created_at timestamptz default now()
 );
 
+-- WISHLIST / FAVORITES
+create table if not exists wishlist (
+  id bigserial primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  listing_id bigint references listings(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique(user_id, listing_id)
+);
+
 -- CMS POSTS
 create table if not exists cms_posts (
   id bigserial primary key,

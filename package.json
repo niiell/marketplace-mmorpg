@@ -22,6 +22,7 @@
     "@supabase/supabase-js": "^2.49.4",
     "contentlayer": "^0.2.0",
     "deps": "^1.0.0",
+    "firebase": "^11.6.1",
     "framer-motion": "^12.9.2",
     "gsap": "^3.12.7",
     "lighthouse": "^12.6.0",
