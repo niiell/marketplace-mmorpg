@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from '../../src/lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";

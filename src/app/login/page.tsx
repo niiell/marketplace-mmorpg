@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { supabase } from '../../src/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
