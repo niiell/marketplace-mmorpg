@@ -1,17 +1,22 @@
-import { defineDocumentType, makeSource } from 'contentlayer/source-files';
+import { defineDocumentType, makeSource } from 'contentlayer/source-files'
 
-// Contoh dokumen Blog
-export const Blog = defineDocumentType(() => ({
-  name: 'Blog',
-  filePathPattern: `blog/*.md`,
+export const Page = defineDocumentType(() => ({
+  name: 'Page',
+  filePathPattern: `**/*.md`,
+  contentType: 'mdx',
   fields: {
     title: { type: 'string', required: true },
-    date: { type: 'date', required: true },
-    description: { type: 'string', required: false },
   },
-}));
+  computedFields: {
+    flattenedPath: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath,
+    },
+  },
+}))
 
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Blog],
-});
+  documentTypes: [Page],
+  disableImportAliasWarning: true,
+})

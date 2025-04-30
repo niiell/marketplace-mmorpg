@@ -13,13 +13,29 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Cek apakah user adalah buyer transaksi ini
-    const { data: trx } = await supabase.from('transactions').select('id, buyer_id, status_order').eq('id', transaction_id).single();
+    const { data: trx } = await supabase.from('transactions').select('id, buyer_id, status_order, seller_id').eq('id', transaction_id).single();
     if (!trx) return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     if (trx.buyer_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     if (trx.status_order !== 'delivered') return NextResponse.json({ error: 'Order not delivered yet' }, { status: 400 });
 
     // Update status_order ke 'confirmed'
     await supabase.from('transactions').update({ status_order: 'confirmed', updated_at: new Date().toISOString() }).eq('id', transaction_id);
+
+    // Send email notification to seller
+    const { data: seller } = await supabase.from('profiles').select('email').eq('user_id', trx.seller_id).single();
+
+    if (seller?.email) {
+      await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: seller.email,
+          subject: 'Pesanan Dikonfirmasi',
+          message: `Pesanan dengan ID ${transaction_id} telah dikonfirmasi oleh pembeli.`,
+        }),
+      });
+    }
+
     // (Opsional) Tambah log
     // await supabase.from('transaction_logs').insert({ transaction_id, action: 'confirmed', performed_by: user.id });
     return NextResponse.json({ success: true });

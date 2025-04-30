@@ -40,6 +40,13 @@ export default function RegisterPage() {
 
       if (error) throw error;
 
+      // Trigger email notification for registration (example)
+      await fetch('/api/notifications/send-registration-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, username: formData.username }),
+      });
+
       router.push("/login?registered=true");
     } catch (err: any) {
       setError(err.message);

@@ -1,0 +1,84 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+interface DisputeFormProps {
+  transactionId: string;
+  userId: string;
+}
+
+export default function DisputeForm({ transactionId, userId }: DisputeFormProps) {
+  const [reason, setReason] = useState('');
+  const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/disputes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction_id: transactionId, user_id: userId, reason, evidence_url: evidenceUrl }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Failed to submit dispute');
+        setLoading(false);
+        return;
+      }
+
+      router.refresh();
+      alert('Dispute submitted successfully');
+      setReason('');
+      setEvidenceUrl('');
+    } catch (err) {
+      setError('Failed to submit dispute');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 border rounded shadow">
+      <h2 className="text-xl font-semibold mb-4">Report a Dispute</h2>
+      {error && <p className="text-red-600 mb-2">{error}</p>}
+      <div className="mb-4">
+        <label htmlFor="reason" className="block mb-1 font-medium">Reason</label>
+        <textarea
+          id="reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          required
+          rows={4}
+          className="w-full border rounded p-2"
+          placeholder="Describe the issue"
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="evidenceUrl" className="block mb-1 font-medium">Evidence URL (optional)</label>
+        <input
+          id="evidenceUrl"
+          type="url"
+          value={evidenceUrl}
+          onChange={(e) => setEvidenceUrl(e.target.value)}
+          className="w-full border rounded p-2"
+          placeholder="Link to screenshots or chat logs"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
+      >
+        {loading ? 'Submitting...' : 'Submit Dispute'}
+      </button>
+    </form>
+  );
+}

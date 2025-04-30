@@ -19,12 +19,41 @@ export async function POST(req: NextRequest) {
     }
 
     // Cek status transaksi
-    const { data: trx } = await supabase.from('transactions').select('id, status_order').eq('id', transaction_id).single();
+    const { data: trx } = await supabase.from('transactions').select('id, status_order, buyer_id, seller_id').eq('id', transaction_id).single();
     if (!trx) return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     if (trx.status_order !== 'confirmed') return NextResponse.json({ error: 'Order not confirmed by buyer' }, { status: 400 });
 
     // Update status_order ke 'approved'
     await supabase.from('transactions').update({ status_order: 'approved', updated_at: new Date().toISOString() }).eq('id', transaction_id);
+
+    // Send email notifications to buyer and seller
+    const { data: buyer } = await supabase.from('profiles').select('email').eq('user_id', trx.buyer_id).single();
+    const { data: seller } = await supabase.from('profiles').select('email').eq('user_id', trx.seller_id).single();
+
+    if (buyer?.email) {
+      await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: buyer.email,
+          subject: 'Transaksi Disetujui',
+          message: `Transaksi dengan ID ${transaction_id} telah disetujui oleh admin.`,
+        }),
+      });
+    }
+
+    if (seller?.email) {
+      await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: seller.email,
+          subject: 'Transaksi Disetujui',
+          message: `Transaksi dengan ID ${transaction_id} telah disetujui oleh admin.`,
+        }),
+      });
+    }
+
     // (Opsional) Tambah log
     // await supabase.from('transaction_logs').insert({ transaction_id, action: 'approved', performed_by: user.id });
     // (Opsional) Trigger payout ke penjual via Xendit (XenPlatform API)
