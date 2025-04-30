@@ -1,12 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Footer from 'src/components/Footer';
+import Footer from '../../components/Footer';
 
 // Dynamic imports for components with client-side dependencies
-const Hero = dynamic(() => import('src/components/Hero'), { ssr: false });
-const Features = dynamic(() => import('src/components/Features'), { ssr: false });
-const Testimonials = dynamic(() => import('src/components/Testimonials'), { ssr: false });
+const Hero = dynamic(() => import('../../components/Hero'), { ssr: false });
+const Features = dynamic(() => import('../../components/Features'), { ssr: false });
+const Testimonials = dynamic(() => import('../../components/Testimonials'), { ssr: false });
 
 export default function LandingPage() {
   return (

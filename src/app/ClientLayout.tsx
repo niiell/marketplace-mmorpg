@@ -1,8 +1,8 @@
 "use client";
 import { useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import Navbar from 'src/components/Navbar';
-import { initializeAxe } from 'src/utils/axe-core';
+import Navbar from '../components/Navbar';
+import { initializeAxe } from '../utils/axe-core';
 
 function ErrorFallback({ error }: { error: Error }) {
   return (

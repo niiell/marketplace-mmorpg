@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { supabase } from '../src/lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { List, AutoSizer } from 'react-virtualized';
 
 interface Message {

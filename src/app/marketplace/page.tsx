@@ -122,16 +122,20 @@ export default function MarketplacePage() {
           className="col-span-2"
         />
         <Select {...register("category_id")} placeholder="Kategori" className="col-span-1">
-          <SelectItem key="" value="">Semua Kategori</SelectItem>
-          {categories.map((cat: any) => (
-            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-          ))}
+          <>
+            <SelectItem key="" value="">Semua Kategori</SelectItem>
+            {categories.map((cat: any) => (
+              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+            ))}
+          </>
         </Select>
         <Select {...register("game_id")} placeholder="Game" className="col-span-1">
-          <SelectItem key="" value="">Semua Game</SelectItem>
-          {games.map((game: any) => (
-            <SelectItem key={game.id} value={game.id}>{game.name}</SelectItem>
-          ))}
+          <>
+            <SelectItem key="" value="">Semua Game</SelectItem>
+            {games.map((game: any) => (
+              <SelectItem key={game.id} value={game.id}>{game.name}</SelectItem>
+            ))}
+          </>
         </Select>
         <Input type="number" min={0} placeholder="Harga Min" {...register("minPrice")} className="col-span-1" />
         <Input type="number" min={0} placeholder="Harga Max" {...register("maxPrice")} className="col-span-1" />
