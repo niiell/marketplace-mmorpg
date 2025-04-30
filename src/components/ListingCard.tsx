@@ -1,6 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useCurrency } from "../context/CurrencyContext";
+import { formatCurrency } from "../../tools/formatCurrency";
 
 export default function ListingCard({ listing }: { listing: any }) {
+  const { currency } = useCurrency();
+  const locale = currency === "IDR" ? "id-ID" : currency === "PHP" ? "en-PH" : currency === "THB" ? "th-TH" : "en-US";
+
   return (
     <Link href={`/marketplace/${listing.id}`}>
       <div className="bg-white rounded shadow p-4 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
@@ -24,11 +31,7 @@ export default function ListingCard({ listing }: { listing: any }) {
         </div>
         <h2 className="text-lg font-semibold mb-1 line-clamp-1">{listing.title}</h2>
         <div className="text-blue-600 font-bold text-xl mb-1">
-          {new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            maximumFractionDigits: 0,
-          }).format(listing.price)}
+          {formatCurrency(listing.price, locale, currency)}
         </div>
         {listing.description && (
           <p className="text-gray-600 text-sm mb-2 line-clamp-2">{listing.description}</p>

@@ -4,6 +4,9 @@ import { useRouter } from "next/router";
 import { supabase } from '../../../lib/supabase';
 import gsap from "gsap";
 import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/react";
+import ChatButton from '../../../components/ChatButton';
+import ReviewForm from '../../../components/ReviewForm';
+import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
 
@@ -18,6 +21,20 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+
+  const fetchReviews = async (sellerId: string) => {
+    const { data: reviewList } = await supabase
+      .from("reviews")
+      .select("rating, comment, reviewer_id, created_at")
+      .eq("reviewee_id", sellerId);
+    setReviews(reviewList || []);
+    if (reviewList && reviewList.length > 0) {
+      const avg = reviewList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewList.length;
+      setAvgRating(avg);
+    } else {
+      setAvgRating(null);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -47,23 +64,16 @@ export default function ProductDetailPage() {
   }, [product]);
 
   useEffect(() => {
-    if (id) {
-      const fetchReviews = async (sellerId: string) => {
-        const { data: reviewList } = await supabase
-          .from("reviews")
-          .select("rating, comment, reviewer_id, created_at")
-          .eq("reviewee_id", sellerId);
-        setReviews(reviewList || []);
-        if (reviewList && reviewList.length > 0) {
-          const avg = reviewList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewList.length;
-          setAvgRating(avg);
-        } else {
-          setAvgRating(null);
-        }
-      };
-      if (product?.seller?.id) fetchReviews(product.seller.id);
+    if (id && product?.seller?.id) {
+      fetchReviews(product.seller.id);
     }
   }, [id, product?.seller?.id]);
+
+  const handleReviewSubmitted = () => {
+    if (product?.seller?.id) {
+      fetchReviews(product.seller.id);
+    }
+  };
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
 
@@ -121,9 +131,7 @@ export default function ProductDetailPage() {
               )}
             </div>
             <div className="flex gap-4 product-action">
-              <NextUIButton color="primary" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Chat dengan Penjual
-              </NextUIButton>
+              <ChatButton listingId={Number(id)} />
               <NextUIButton color="success" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                 Beli Sekarang
               </NextUIButton>
@@ -150,6 +158,16 @@ export default function ProductDetailPage() {
           ) : (
             <p className="text-gray-600">Belum ada ulasan untuk produk ini.</p>
           )}
+        </div>
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Tulis Ulasan</h2>
+          <ReviewForm listingId={id as string} onReviewSubmitted={handleReviewSubmitted} />
+        </div>
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Ajukan Dispute</h2>
+          <DisputeForm listingId={id as string} onDisputeSubmitted={() => {}} />
         </div>
       </div>
     </>

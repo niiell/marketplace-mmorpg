@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { useCurrency } from "../../../context/CurrencyContext";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -13,6 +14,7 @@ type CheckoutClientProps = {
 
 export default function CheckoutClient({ listingId }: CheckoutClientProps) {
   const router = useRouter();
+  const { currency, convert } = useCurrency();
 
   useEffect(() => {
     const startCheckout = async () => {
@@ -32,6 +34,9 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
         router.push("/marketplace");
         return;
       }
+      // Convert price to selected currency if needed
+      const amount = convert(listing.price, currency);
+
       // Create transaction
       const { data: trx, error: trxError } = await supabase
         .from("transactions")
@@ -39,7 +44,7 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
           listing_id: listingId,
           buyer_id: user.id,
           seller_id: listing.seller_id,
-          amount: listing.price,
+          amount: amount,
           status_order: "PENDING",
           status_payment: "PENDING"
         })
@@ -53,7 +58,7 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transaction_id: trx.id, amount: listing.price, buyer_id: user.id })
+        body: JSON.stringify({ transaction_id: trx.id, amount: amount, buyer_id: user.id })
       });
       const result = await res.json();
       if (result.payment_url) {
@@ -64,7 +69,7 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
     };
     startCheckout();
     // eslint-disable-next-line
-  }, [listingId]);
+  }, [listingId, currency]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

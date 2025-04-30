@@ -30,15 +30,18 @@ async function getMessages(locale: string) {
 
 export default async function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
-  const messages = await getMessages('id');
-  
+  const locale = params?.locale || "id";
+  const messages = await getMessages(locale);
+
   return (
-    <html lang="id">
+    <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers messages={messages} locale="id">
+        <Providers messages={messages} locale={locale}>
           <ClientLayout>{children}</ClientLayout>
         </Providers>
       </body>

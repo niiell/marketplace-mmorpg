@@ -39,6 +39,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: process.env.NODE_ENV === 'development'
   },
+  i18n: {
+    locales: ['en', 'id', 'ph', 'th'],
+    defaultLocale: 'id',
+    localeDetection: true
+  },
   headers: async () => {
     return [
       {
