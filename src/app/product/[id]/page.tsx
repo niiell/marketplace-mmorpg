@@ -9,6 +9,7 @@ import ReviewForm from '../../../components/ReviewForm';
 import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 const Swiper = dynamic(() => import('swiper/react').then(mod => mod.Swiper), { ssr: false });
 const SwiperSlide = dynamic(() => import('swiper/react').then(mod => mod.SwiperSlide), { ssr: false });
@@ -93,6 +94,24 @@ export default function ProductDetailPage() {
         }}
       />
       <div className="max-w-4xl mx-auto py-12 px-4">
+        {/* Breadcrumbs */}
+        <nav className="text-sm mb-4" aria-label="Breadcrumb">
+          <ol className="list-reset flex text-gray-600 dark:text-gray-400">
+            <li>
+              <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</Link>
+              <span className="mx-2">/</span>
+            </li>
+            <li>
+              <Link href={`/category/${product.category?.id || ''}`} className="hover:text-blue-600 dark:hover:text-blue-400">
+                {product.category?.name || 'Kategori'}
+              </Link>
+              <span className="mx-2">/</span>
+            </li>
+            <li className="text-gray-900 dark:text-gray-100 font-semibold" aria-current="page">
+              {product.title}
+            </li>
+          </ol>
+        </nav>
         <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Image Gallery */}
