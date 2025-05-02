@@ -1,21 +1,39 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { formatCurrency } from "../tools/formatCurrency";
 
 interface CurrencyContextType {
   currency: string;
   setCurrency: (currency: string) => void;
   conversionRates: Record<string, number>;
   convert: (value: number, toCurrency: string) => number;
+  format: (value: number) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
+const localeCurrencyMap: Record<string, string> = {
+  "id-ID": "IDR",
+  "en-PH": "PHP",
+  "th-TH": "THB",
+  "en-US": "USD",
+  "en-GB": "GBP",
+  "fr-FR": "EUR",
+};
+
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currency, setCurrency] = useState("USD");
+  const [locale, setLocale] = useState("en-US");
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({ USD: 1 });
 
   useEffect(() => {
+    // Detect user locale
+    const userLocale = navigator.language || "en-US";
+    setLocale(userLocale);
+    const detectedCurrency = localeCurrencyMap[userLocale] || "USD";
+    setCurrency(detectedCurrency);
+
     // Fetch conversion rates from an API or use static rates
     // For example purposes, using static rates
     const rates = {
@@ -24,6 +42,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       PHP: 55,
       THB: 35,
       EUR: 0.9,
+      GBP: 0.8,
     };
     setConversionRates(rates);
   }, []);
@@ -34,8 +53,12 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return value * rate;
   };
 
+  const format = (value: number) => {
+    return formatCurrency(value, locale, currency);
+  };
+
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, conversionRates, convert }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, conversionRates, convert, format }}>
       {children}
     </CurrencyContext.Provider>
   );

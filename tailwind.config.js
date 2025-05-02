@@ -17,10 +17,34 @@ module.exports = {
         },
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        primary: {
+          DEFAULT: '#2563eb',
+          dark: '#1e40af',
+          light: '#60a5fa',
+        },
+        secondary: {
+          DEFAULT: '#64748b',
+          dark: '#475569',
+          light: '#94a3b8',
+        },
+        accent: {
+          DEFAULT: '#f43f5e',
+          dark: '#be123c',
+          light: '#fda4af',
+        },
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'Arial', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'monospace'],
+        heading: ['"Inter"', 'sans-serif'],
+      },
+      spacing: {
+        xs: '0.25rem',
+        sm: '0.5rem',
+        md: '1rem',
+        lg: '1.5rem',
+        xl: '2rem',
+        '2xl': '3rem',
       },
       keyframes: {
         'fade-in-up': {
@@ -30,6 +54,16 @@ module.exports = {
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1)',
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
       },
     },
   },

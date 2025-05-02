@@ -20,8 +20,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Navbar />
-      {children}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <Navbar />
+        <main>{children}</main>
+      </div>
     </ErrorBoundary>
   );
 }

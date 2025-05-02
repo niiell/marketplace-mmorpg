@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import * as Toggle from '@radix-ui/react-toggle';
 
-export default function Navbar() {
+export default function NavbarRadix() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {

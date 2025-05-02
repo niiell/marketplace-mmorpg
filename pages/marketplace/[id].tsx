@@ -1,16 +1,43 @@
+
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { supabase } from '../../src/lib/supabase';
 import Gallery from '../../src/components/Gallery';
 import ChatButton from '../../src/components/ChatButton';
 import BuyButton from '../../src/components/BuyButton';
+import ReviewForm from '../../src/components/ReviewForm';
+import DisputeForm from '../../src/components/DisputeForm';
+import { useState } from 'react';
+import { useCurrency } from '../../src/context/CurrencyContext';
 
-export default function ListingDetail({ listing, reviews }: any) {
+export default function ListingDetail({ listing, reviews: initialReviews }: any) {
+  const [reviews, setReviews] = useState(initialReviews);
+  const [disputes, setDisputes] = useState([]);
+  const { format } = useCurrency();
+
   if (!listing) return <div>Not found</div>;
 
   // Calculate average rating
   const avgRating = reviews && reviews.length > 0
     ? reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / reviews.length
     : null;
+
+  const handleReviewSubmitted = async () => {
+    // Re-fetch reviews after a new review is submitted
+    const { data: updatedReviews } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('transaction_id', listing.id);
+    setReviews(updatedReviews || []);
+  };
+
+  const handleDisputeSubmitted = async () => {
+    // Re-fetch disputes after a new dispute is submitted
+    const { data: updatedDisputes } = await supabase
+      .from('disputes')
+      .select('*')
+      .eq('listing_id', listing.id);
+    setDisputes(updatedDisputes || []);
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -19,11 +46,7 @@ export default function ListingDetail({ listing, reviews }: any) {
         <div>
           <h1 className="text-2xl font-bold mb-2">{listing.title}</h1>
           <div className="text-blue-600 font-bold text-xl mb-2">
-            {new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-              maximumFractionDigits: 0,
-            }).format(listing.price)}
+            {format(listing.price)}
           </div>
           <p className="mb-4">{listing.description}</p>
           <div className="mb-4">
@@ -55,6 +78,13 @@ export default function ListingDetail({ listing, reviews }: any) {
             ))}
           </ul>
         )}
+        <div className="mt-6">
+          <ReviewForm listingId={listing.id} onReviewSubmitted={handleReviewSubmitted} />
+        </div>
+        <div className="mt-10">
+          <h2 className="text-xl font-bold mb-4 text-red-600">Ajukan Dispute</h2>
+          <DisputeForm listingId={listing.id} onDisputeSubmitted={handleDisputeSubmitted} />
+        </div>
       </div>
     </div>
   );
