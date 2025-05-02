@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ReviewFormProps {
   listingId: string;
@@ -11,15 +12,30 @@ export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormP
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ratingValid, setRatingValid] = useState(true);
+  const [commentValid, setCommentValid] = useState(true);
+
+  useEffect(() => {
+    setRatingValid(rating >= 1 && rating <= 5);
+  }, [rating]);
+
+  useEffect(() => {
+    setCommentValid(comment.length >= 10 && comment.length <= 500);
+  }, [comment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ratingValid || !commentValid) {
+      toast.error('Mohon perbaiki input yang salah');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('Silakan login terlebih dahulu');
+        setIsSubmitting(false);
         return;
       }
 
@@ -51,45 +67,80 @@ export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormP
         <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
           Rating
         </label>
-        <select
+        <motion.select
           id="rating"
           value={rating}
           onChange={(e) => setRating(Number(e.target.value))}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+            ratingValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+          }`}
           required
+          whileFocus={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02 }}
         >
           {[5, 4, 3, 2, 1].map((value) => (
             <option key={value} value={value}>
               {value} Bintang
             </option>
           ))}
-        </select>
+        </motion.select>
+        <AnimatePresence>
+          {!ratingValid && (
+            <motion.p
+              className="text-red-500 text-xs mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Rating harus antara 1 sampai 5.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
       
       <div>
         <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">
           Komentar
         </label>
-        <textarea
+        <motion.textarea
           id="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+            commentValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+          }`}
           rows={4}
           required
           minLength={10}
           maxLength={500}
           placeholder="Berikan komentar Anda..."
+          whileFocus={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02 }}
         />
+        <AnimatePresence>
+          {!commentValid && (
+            <motion.p
+              className="text-red-500 text-xs mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Komentar harus antara 10 sampai 500 karakter.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
-      <button
+      <motion.button
         type="submit"
         disabled={isSubmitting}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgb(59 130 246 / 0.7)' }}
+        whileTap={{ scale: 0.95 }}
+        whileFocus={{ scale: 1.05, boxShadow: '0 0 8px rgb(59 130 246 / 0.7)' }}
       >
         {isSubmitting ? 'Mengirim...' : 'Kirim Review'}
-      </button>
+      </motion.button>
     </form>
   );
 }

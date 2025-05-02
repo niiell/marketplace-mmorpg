@@ -10,6 +10,7 @@ import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { motion } from "framer-motion";
 
 const Swiper = dynamic(() => import('swiper/react').then(mod => mod.Swiper), { ssr: false });
 const SwiperSlide = dynamic(() => import('swiper/react').then(mod => mod.SwiperSlide), { ssr: false });
@@ -151,7 +152,13 @@ export default function ProductDetailPage() {
             </div>
             <div className="flex gap-4 product-action">
               <ChatButton listingId={Number(id)} />
-              <NextUIButton color="success" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              <NextUIButton
+                color="success"
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                as={motion.button}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 12px rgba(0, 255, 255, 0.7)', filter: 'blur(1px)' }}
+                whileFocus={{ scale: 1.05, boxShadow: '0 0 12px rgba(0, 255, 255, 0.7)', filter: 'blur(1px)' }}
+              >
                 Beli Sekarang
               </NextUIButton>
             </div>

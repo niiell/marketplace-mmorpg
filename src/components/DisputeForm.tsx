@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DisputeFormProps {
   listingId: string;
@@ -11,6 +12,11 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
   const [reason, setReason] = useState('');
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reasonValid, setReasonValid] = useState(true);
+
+  useEffect(() => {
+    setReasonValid(reason.length >= 10 && reason.length <= 1000);
+  }, [reason]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -20,6 +26,10 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reasonValid) {
+      toast.error('Mohon perbaiki input yang salah');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -73,17 +83,33 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
         <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
           Alasan Dispute
         </label>
-        <textarea
+        <motion.textarea
           id="reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+            reasonValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+          }`}
           rows={4}
           required
           minLength={10}
           maxLength={1000}
           placeholder="Jelaskan alasan dispute Anda..."
+          whileFocus={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02 }}
         />
+        <AnimatePresence>
+          {!reasonValid && (
+            <motion.p
+              className="text-red-500 text-xs mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Alasan harus antara 10 sampai 1000 karakter.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
       <div>
@@ -99,13 +125,16 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
         />
       </div>
 
-      <button
+      <motion.button
         type="submit"
         disabled={isSubmitting}
         className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
+        whileTap={{ scale: 0.95 }}
+        whileFocus={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
       >
         {isSubmitting ? 'Mengirim...' : 'Ajukan Dispute'}
-      </button>
+      </motion.button>
     </form>
   );
 }
