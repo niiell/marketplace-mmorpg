@@ -10,76 +10,15 @@ import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { motion } from "framer-motion";
-
-const Swiper = dynamic(() => import('swiper/react').then(mod => mod.Swiper), { ssr: false });
-const SwiperSlide = dynamic(() => import('swiper/react').then(mod => mod.SwiperSlide), { ssr: false });
-import 'swiper/css';
+import Modal from '../../../components/Modal';
 
 export default function ProductDetailPage() {
-  const router = useRouter();
-  const { id } = router.query;
-  const [product, setProduct] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [avgRating, setAvgRating] = useState<number | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  // ... existing code ...
 
-  const fetchReviews = async (sellerId: string) => {
-    const { data: reviewList } = await supabase
-      .from("reviews")
-      .select("rating, comment, reviewer_id, created_at")
-      .eq("reviewee_id", sellerId);
-    setReviews(reviewList || []);
-    if (reviewList && reviewList.length > 0) {
-      const avg = reviewList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewList.length;
-      setAvgRating(avg);
-    } else {
-      setAvgRating(null);
-    }
-  };
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      const fetchProduct = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("listings")
-          .select("*, reviews(*), seller:profiles(username)")
-          .eq("id", id)
-          .single();
-
-        if (!error) {
-          setProduct(data);
-        }
-        setLoading(false);
-      };
-
-      fetchProduct();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (product) {
-      gsap.fromTo('.product-gallery', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 });
-      gsap.fromTo('.product-action', { scale: 0.9 }, { scale: 1, duration: 0.3, delay: 0.2 });
-    }
-  }, [product]);
-
-  useEffect(() => {
-    if (id && product?.seller?.id) {
-      fetchReviews(product.seller.id);
-    }
-  }, [id, product?.seller?.id]);
-
-  const handleReviewSubmitted = () => {
-    if (product?.seller?.id) {
-      fetchReviews(product.seller.id);
-    }
-  };
-
-  if (loading) return <div className="text-center py-12">Loading...</div>;
-
-  if (!product) return <div className="text-center py-12">Produk tidak ditemukan.</div>;
+  // ... existing code ...
 
   return (
     <>
@@ -94,7 +33,13 @@ export default function ProductDetailPage() {
           ],
         }}
       />
-      <div className="max-w-4xl mx-auto py-12 px-4">
+      <motion.div
+        className="max-w-4xl mx-auto py-12 px-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.5 }}
+      >
         {/* Breadcrumbs */}
         <nav className="text-sm mb-4" aria-label="Breadcrumb">
           <ol className="list-reset flex text-gray-600 dark:text-gray-400">
@@ -168,34 +113,34 @@ export default function ProductDetailPage() {
         {/* Reviews */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-4">Ulasan</h2>
-          {reviews.length > 0 ? (
-            <div className="space-y-4">
-              {reviews.map((review: any, idx: number) => (
-                <div key={idx} className="bg-gray-100 p-4 rounded-lg shadow">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-yellow-500">{'★'.repeat(review.rating)}</span>
-                    <span className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-800 italic">"{review.comment}"</p>
-                  <p className="text-sm text-gray-600 mt-2">- {review.reviewer_id}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-600">Belum ada ulasan untuk produk ini.</p>
-          )}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => setIsReviewModalOpen(true)}
+          >
+            Tulis Ulasan
+          </button>
         </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-4">Tulis Ulasan</h2>
-          <ReviewForm listingId={id as string} onReviewSubmitted={handleReviewSubmitted} />
-        </div>
-
+        {/* Dispute */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-4">Ajukan Dispute</h2>
-          <DisputeForm listingId={id as string} onDisputeSubmitted={() => {}} />
+          <button
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            onClick={() => setIsDisputeModalOpen(true)}
+          >
+            Ajukan Dispute
+          </button>
         </div>
-      </div>
+
+        {/* Modals */}
+        <Modal isOpen={isReviewModalOpen} onClose={() => setIsReviewModalOpen(false)}>
+          <ReviewForm listingId={id as string} onReviewSubmitted={() => setIsReviewModalOpen(false)} />
+        </Modal>
+
+        <Modal isOpen={isDisputeModalOpen} onClose={() => setIsDisputeModalOpen(false)}>
+          <DisputeForm listingId={id as string} onDisputeSubmitted={() => setIsDisputeModalOpen(false)} />
+        </Modal>
+      </motion.div>
     </>
   );
 }

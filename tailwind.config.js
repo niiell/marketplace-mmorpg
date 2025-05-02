@@ -8,6 +8,7 @@ module.exports = {
     './content/**/*.{md,mdx}',
   ],
   theme: {
+    
     extend: {
       colors: {
         brand: {
@@ -64,6 +65,23 @@ module.exports = {
           xl: '5rem',
           '2xl': '6rem',
         },
+      },
+      // Add inside theme.extend.keyframes
+smoke: {
+  '0%': { opacity: '0.6', transform: 'translateY(0) scale(1)' },
+  '50%': { opacity: '0.3', transform: 'translateY(-10px) scale(1.1)' },
+  '100%': { opacity: '0', transform: 'translateY(-20px) scale(1.2)' },
+},
+// Add inside theme.extend.animation
+smoke: 'smoke 1s ease-out forwards',
+      // Add inside theme.extend.screens
+      screens: {
+        xs: '480px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1536px',
       },
     },
   },

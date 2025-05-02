@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Navbar from '../components/Navbar';
 import { initializeAxe } from '../utils/axe-core';
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 function ErrorFallback({ error }: { error: Error }) {
   return (
@@ -14,6 +16,8 @@ function ErrorFallback({ error }: { error: Error }) {
 }
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     initializeAxe();
   }, []);
@@ -22,7 +26,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <Navbar />
-        <main>{children}</main>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.main
+            key={pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
       </div>
     </ErrorBoundary>
   );

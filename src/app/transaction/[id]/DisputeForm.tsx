@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import '../../styles/smoke-effect.css';
 
 interface DisputeFormProps {
   transactionId: string;
@@ -13,12 +14,43 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reasonValid, setReasonValid] = useState<boolean | null>(null);
+  const [evidenceUrlValid, setEvidenceUrlValid] = useState<boolean | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (reason.trim().length === 0) {
+      setReasonValid(null);
+    } else if (reason.trim().length < 10) {
+      setReasonValid(false);
+    } else {
+      setReasonValid(true);
+    }
+  }, [reason]);
+
+  useEffect(() => {
+    if (evidenceUrl.trim().length === 0) {
+      setEvidenceUrlValid(null);
+    } else {
+      try {
+        new URL(evidenceUrl);
+        setEvidenceUrlValid(true);
+      } catch {
+        setEvidenceUrlValid(false);
+      }
+    }
+  }, [evidenceUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (reasonValid === false || evidenceUrlValid === false) {
+      setError('Please fix validation errors before submitting.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/disputes', {
@@ -38,6 +70,8 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
       alert('Dispute submitted successfully');
       setReason('');
       setEvidenceUrl('');
+      setReasonValid(null);
+      setEvidenceUrlValid(null);
     } catch (err) {
       setError('Failed to submit dispute');
     } finally {
@@ -57,7 +91,9 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
           onChange={(e) => setReason(e.target.value)}
           required
           rows={4}
-          className="w-full border rounded p-2"
+          className={`w-full border rounded p-2 transition ${
+            reasonValid === true ? 'input-valid' : reasonValid === false ? 'input-error' : ''
+          }`}
           placeholder="Describe the issue"
         />
       </div>
@@ -68,14 +104,16 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
           type="url"
           value={evidenceUrl}
           onChange={(e) => setEvidenceUrl(e.target.value)}
-          className="w-full border rounded p-2"
+          className={`w-full border rounded p-2 transition ${
+            evidenceUrlValid === true ? 'input-valid' : evidenceUrlValid === false ? 'input-error' : ''
+          }`}
           placeholder="Link to screenshots or chat logs"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
+        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 smoke-button"
       >
         {loading ? 'Submitting...' : 'Submit Dispute'}
       </button>

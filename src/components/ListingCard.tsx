@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCurrency } from "../context/CurrencyContext";
 import { formatCurrency } from "../../tools/formatCurrency";
 
@@ -13,10 +14,14 @@ import WishlistButton from "./WishlistButton";
   return (
     <Link href={`/marketplace/${listing.id}`}>
       <div className="bg-white rounded shadow p-4 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
-        <img
+        <Image
           src={listing.image_url}
           alt={listing.title}
           className="w-full h-40 object-cover rounded mb-3"
+          width={400}
+          height={160}
+          placeholder="blur"
+          blurDataURL="/placeholder.png"
         />
         <div className="flex items-center gap-2 mb-2">
           {listing.category && (
@@ -44,7 +49,15 @@ import WishlistButton from "./WishlistButton";
         {listing.seller && (
           <div className="flex items-center gap-2 mt-2">
             {listing.seller.avatar_url && (
-              <img src={listing.seller.avatar_url} alt="avatar" className="w-6 h-6 rounded-full" />
+              <Image
+                src={listing.seller.avatar_url}
+                alt="avatar"
+                className="rounded-full"
+                width={24}
+                height={24}
+                placeholder="blur"
+                blurDataURL="/avatar-placeholder.png"
+              />
             )}
             <span className="text-xs text-gray-500">{listing.seller.username || listing.seller_id}</span>
           </div>

@@ -62,7 +62,14 @@ export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormP
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-4"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
       <div>
         <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
           Rating
@@ -141,6 +148,6 @@ export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormP
       >
         {isSubmitting ? 'Mengirim...' : 'Kirim Review'}
       </motion.button>
-    </form>
+    </motion.form>
   );
 }

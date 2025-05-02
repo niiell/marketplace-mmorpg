@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { List, AutoSizer } from 'react-virtualized';
+import SkeletonLoader from './SkeletonLoader';
+import '../styles/smoke-effect.css';
+import { useReducedMotion, motion } from 'framer-motion';
 
 interface Message {
   id: number;
@@ -19,17 +22,22 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [inputValid, setInputValid] = useState<boolean | null>(null);
   const listRef = useRef<List>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   // Fetch initial messages
   useEffect(() => {
     const fetchMessages = async () => {
+      setLoading(true);
       const { data, error } = await supabase
         .from('messages')
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
       if (!error && data) setMessages(data as Message[]);
+      setLoading(false);
     };
     fetchMessages();
   }, [chatId]);
@@ -78,6 +86,20 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
       content: input,
     });
     setInput('');
+    setInputValid(null);
+  };
+
+  // Input change handler with real-time validation
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+    if (value.trim().length === 0) {
+      setInputValid(null);
+    } else if (value.trim().length < 3) {
+      setInputValid(false);
+    } else {
+      setInputValid(true);
+    }
   };
 
   // Render each message
@@ -109,10 +131,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
 
   // Auto scroll to bottom on new message
   useEffect(() => {
-    if (listRef.current) {
+    if (listRef.current && !shouldReduceMotion) {
       listRef.current.scrollToRow(messages.length - 1);
     }
-  }, [messages]);
+  }, [messages, shouldReduceMotion]);
 
   return (
     <div className="flex flex-col h-full w-full max-w-lg mx-auto border rounded shadow bg-white">
@@ -125,30 +147,40 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
         )}
       </div>
       <div className="flex-1 overflow-hidden">
-        <AutoSizer>
-          {({ height, width }: { height: number; width: number }) => (
-            <List
-              ref={listRef}
-              width={width}
-              height={height}
-              rowCount={messages.length}
-              rowHeight={70}
-              rowRenderer={rowRenderer}
-              overscanRowCount={5}
-            />
-          )}
-        </AutoSizer>
+        {loading ? (
+          <div className="p-4 space-y-2">
+            <SkeletonLoader height="1.5rem" className="w-3/4" />
+            <SkeletonLoader height="1.5rem" className="w-1/2" />
+            <SkeletonLoader height="1.5rem" className="w-2/3" />
+          </div>
+        ) : (
+          <AutoSizer>
+            {({ height, width }: { height: number; width: number }) => (
+              <List
+                ref={listRef}
+                width={width}
+                height={height}
+                rowCount={messages.length}
+                rowHeight={70}
+                rowRenderer={rowRenderer}
+                overscanRowCount={5}
+              />
+            )}
+          </AutoSizer>
+        )}
       </div>
       <div className="flex p-3 border-t gap-2">
         <input
-          className="flex-1 border rounded px-3 py-2"
+          className={`flex-1 border rounded px-3 py-2 transition ${
+            inputValid === true ? 'input-valid' : inputValid === false ? 'input-error' : ''
+          }`}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           placeholder="Type a message..."
         />
         <button
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded smoke-button"
           onClick={sendMessage}
         >
           Send
@@ -158,4 +190,3 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
   );
 };
 
-export default ChatRoom;
