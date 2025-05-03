@@ -1,10 +1,13 @@
 {
   "common": {
-    "home": "หน้าแรก",
-    "marketplace": "ตลาดซื้อขาย",
-    "dashboard": "แดชบอร์ด",
-    "login": "เข้าสู่ระบบ",
-    "register": "ลงทะเบียน",
-    "logout": "ออกจากระบบ"
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "chatButton": "Chat",
+    "dispute": "Dispute",
+    "review": "Review"
   }
 }

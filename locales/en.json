@@ -5,6 +5,9 @@
     "dashboard": "Dashboard",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "chatButton": "Chat",
+    "dispute": "Dispute",
+    "review": "Review"
   }
 }

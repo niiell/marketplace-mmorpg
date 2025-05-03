@@ -15,8 +15,40 @@ export const Page = defineDocumentType(() => ({
   },
 }))
 
+export const DisputeGuideline = defineDocumentType(() => ({
+  name: 'DisputeGuideline',
+  filePathPattern: `dispute/guidelines/*.md`,
+  contentType: 'mdx',
+  fields: {
+    title: { type: 'string', required: true },
+    description: { type: 'string', required: false },
+  },
+  computedFields: {
+    flattenedPath: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath,
+    },
+  },
+}))
+
+export const FAQ = defineDocumentType(() => ({
+  name: 'FAQ',
+  filePathPattern: `faq/*.md`,
+  contentType: 'mdx',
+  fields: {
+    question: { type: 'string', required: true },
+    answer: { type: 'string', required: true },
+  },
+  computedFields: {
+    flattenedPath: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath,
+    },
+  },
+}))
+
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Page],
+  documentTypes: [Page, DisputeGuideline, FAQ],
   disableImportAliasWarning: true,
 })

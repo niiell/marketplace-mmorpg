@@ -41,6 +41,9 @@ Marketplace MMORPG SEA is a platform for buying and selling in-game items, gold,
    
    # Run migrations
    supabase db reset
+   
+   # Alternatively, run the SQL script manually:
+   psql -d your_database -f supabase-init.sql
    ```
 4. Run local development:
    ```sh
@@ -113,6 +116,8 @@ For deployment:
 3. Set required environment variables in Vercel dashboard
 4. Configure Supabase database policies
 5. Set up Xendit webhook endpoints
+
+**Note:** The `supabase-init.sql` script in the root directory contains the database schema and policies. Currently, it is not integrated into the CI/CD deployment workflow. Consider adding a step in your deployment pipeline to run this script or manage migrations accordingly.
 
 ## API Documentation
 REST API endpoints are documented in OpenAPI specification at `.github/api-spec/openapi.yaml`.

@@ -5,6 +5,9 @@
     "dashboard": "Dashboard",
     "login": "Masuk",
     "register": "Daftar",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "chatButton": "Obrolan",
+    "dispute": "Sengketa",
+    "review": "Ulasan"
   }
 }
