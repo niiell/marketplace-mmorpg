@@ -42,15 +42,16 @@ export default function NotificationToaster({ message, type, duration = 3000, on
           className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2`}
           aria-live="polite"
           aria-atomic="true"
+          tabIndex={0}
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          onKeyDown={handleKeyDown}
         >
           <span>{message}</span>
           <button
             onClick={handleClose}
-            onKeyDown={handleKeyDown}
             className="ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white p-1 hover:opacity-80"
             aria-label="Close notification"
           >

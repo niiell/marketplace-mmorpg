@@ -78,7 +78,7 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" aria-live="polite" aria-relevant="additions">
       <div>
         <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
           Alasan Dispute
@@ -95,16 +95,20 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
           minLength={10}
           maxLength={1000}
           placeholder="Jelaskan alasan dispute Anda..."
+          aria-invalid={!reasonValid}
+          aria-describedby="reason-error"
           whileFocus={{ scale: 1.02 }}
           whileHover={{ scale: 1.02 }}
         />
         <AnimatePresence>
           {!reasonValid && (
             <motion.p
+              id="reason-error"
               className="text-red-500 text-xs mt-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              role="alert"
             >
               Alasan harus antara 10 sampai 1000 karakter.
             </motion.p>
@@ -122,7 +126,11 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
           accept="image/*,application/pdf"
           onChange={handleFileChange}
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          aria-describedby="evidence-help"
         />
+        <p id="evidence-help" className="text-xs text-gray-500 mt-1">
+          Upload bukti pendukung dalam format gambar atau PDF.
+        </p>
       </div>
 
       <motion.button
@@ -132,6 +140,7 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
         whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
         whileTap={{ scale: 0.95 }}
         whileFocus={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
+        aria-live="polite"
       >
         {isSubmitting ? 'Mengirim...' : 'Ajukan Dispute'}
       </motion.button>

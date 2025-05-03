@@ -12,7 +12,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchWishlistStatus = async () => {
+    const fetchWishlistStatus = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -70,6 +70,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
       disabled={loading}
       aria-pressed={isWishlisted}
       aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      tabIndex={0}
       className={`px-3 py-1 rounded ${
         isWishlisted ? "bg-red-500 text-white" : "bg-gray-200 text-gray-800"
       }`}
