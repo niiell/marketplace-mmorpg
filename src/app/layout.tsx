@@ -17,6 +17,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Marketplace MMORPG SEA",
   description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
+  viewport: "width=device-width, initial-scale=1",
+  openGraph: {
+    title: "Marketplace MMORPG SEA",
+    description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
+    url: "https://yourdomain.com",
+    siteName: "Marketplace MMORPG SEA",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Marketplace MMORPG SEA",
+    description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
+    site: "@yourtwitterhandle",
+    creator: "@yourtwitterhandle",
+  },
 };
 
 async function getMessages(locale: string) {

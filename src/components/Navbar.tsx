@@ -1,39 +1,38 @@
 "use client";
+import Link from "next/link";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const [dark, setDark] = useState(false);
+  const { theme, setTheme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Sync with localStorage and html class
-    const isDark = localStorage.getItem("theme") === "dark" ||
-      (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDark(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
+    setMounted(true);
   }, []);
 
-  const toggleDark = () => {
-    const newDark = !dark;
-    setDark(newDark);
-    document.documentElement.classList.toggle("dark", newDark);
-    localStorage.setItem("theme", newDark ? "dark" : "light");
-  };
+  const currentTheme = theme === "system" ? systemTheme : theme;
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <nav className="w-full flex items-center justify-between px-6 py-3 bg-background border-b border-gray-200 dark:border-gray-800">
-      <div className="font-bold text-xl text-brand">Marketplace MMORPG</div>
-      <Toggle.Root
-        pressed={dark}
-        onPressedChange={toggleDark}
-        className="rounded-full p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 shadow hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-        aria-label="Toggle dark mode"
-      >
-        {dark ? (
-          <span title="Light Mode">🌞</span>
-        ) : (
-          <span title="Dark Mode">🌙</span>
-        )}
-      </Toggle.Root>
+    <nav className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 shadow">
+      <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
+        Marketplace MMORPG SEA
+      </Link>
+      <div className="flex items-center space-x-4">
+        <LanguageSwitcher />
+        <button
+          onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
+          className="px-2 py-1 border rounded text-sm"
+          aria-label="Toggle dark mode"
+        >
+          {currentTheme === "dark" ? "Light" : "Dark"}
+        </button>
+      </div>
     </nav>
   );
 }
