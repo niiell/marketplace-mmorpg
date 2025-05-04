@@ -50,5 +50,7 @@ export const FAQ = defineDocumentType(() => ({
 export default makeSource({
   contentDirPath: 'content',
   documentTypes: [Page, DisputeGuideline, FAQ],
-  disableImportAliasWarning: true,
+  // pastikan generated path sesuai
+  generateArtifacts: true,
+  disableImportAliasWarning: true
 })

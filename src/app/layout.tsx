@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
-import { AnimatePresence, motion } from "framer-motion";
 import Layout from "../components/Layout";
 
 const geistSans = Geist({
@@ -19,7 +18,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Marketplace MMORPG SEA",
   description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
-  viewport: "width=device-width, initial-scale=1",
   openGraph: {
     title: "Marketplace MMORPG SEA",
     description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
@@ -37,6 +35,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 async function getMessages(locale: string) {
   try {
     return (await import(`../../locales/${locale}.json`)).default;
@@ -51,9 +54,9 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const locale = params?.locale || "id";
+  const locale = (await params).locale || "id";
   const messages = await getMessages(locale);
 
   return (
@@ -61,17 +64,7 @@ export default async function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>
           <Layout>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={locale}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ClientLayout>{children}</ClientLayout>
-              </motion.div>
-            </AnimatePresence>
+            <ClientLayout>{children}</ClientLayout>
           </Layout>
         </Providers>
       </body>

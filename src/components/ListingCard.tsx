@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCurrency } from "../context/CurrencyContext";
-import { formatCurrency } from "../../tools/formatCurrency";
+import { formatCurrency } from "../tools/formatCurrency";
 import WishlistButton from "./WishlistButton";
 
 export default function ListingCard({ listing }: { listing: any }) {
@@ -21,6 +21,7 @@ export default function ListingCard({ listing }: { listing: any }) {
           height={160}
           placeholder="blur"
           blurDataURL="/placeholder.png"
+          priority={false}
         />
         <div className="flex items-center gap-2 mb-2">
           {listing.category && (

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter, useParams } from "next/navigation";
 import { supabase } from '../../../lib/supabase';
 import gsap from "gsap";
 import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/react";
@@ -11,14 +11,60 @@ import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Modal from '../../../components/Modal';
+import { motion } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 export default function ProductDetailPage() {
-  // ... existing code ...
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id;
 
+  const [product, setProduct] = useState<any>(null);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
 
-  // ... existing code ...
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching product:', error);
+        return;
+      }
+      setProduct(data);
+
+      // Fetch average rating
+      const { data: reviews, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('product_id', id);
+
+      if (reviewsError) {
+        console.error('Error fetching reviews:', reviewsError);
+        setAvgRating(null);
+        return;
+      }
+
+      if (reviews && reviews.length > 0) {
+        const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+        setAvgRating(total / reviews.length);
+      } else {
+        setAvgRating(null);
+      }
+    }
+
+    fetchProduct();
+  }, [id]);
+
+  if (!product) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

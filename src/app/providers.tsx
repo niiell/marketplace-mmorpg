@@ -1,7 +1,7 @@
 "use client";
 
 import { IntlProvider } from "next-intl";
-import useFirebaseMessaging from "../hooks/useFirebaseMessaging";
+import { useFirebaseMessaging } from "../hooks/useFirebaseMessaging";
 
 export function Providers({
   children,
