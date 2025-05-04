@@ -4,12 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCurrency } from "../context/CurrencyContext";
 import { formatCurrency } from "../../tools/formatCurrency";
+import WishlistButton from "./WishlistButton";
 
 export default function ListingCard({ listing }: { listing: any }) {
   const { currency } = useCurrency();
   const locale = currency === "IDR" ? "id-ID" : currency === "PHP" ? "en-PH" : currency === "THB" ? "th-TH" : "en-US";
-
-import WishlistButton from "./WishlistButton";
 
   return (
     <Link href={`/marketplace/${listing.id}`}>

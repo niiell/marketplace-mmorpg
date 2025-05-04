@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/cypress/videos
+/cypress/screenshots
 
 # next.js
 /.next/
@@ -19,10 +21,12 @@
 
 # production
 /build
+/Build
 
 # misc
 .DS_Store
 *.pem
+axe-report.json
 
 # debug
 npm-debug.log*
@@ -31,7 +35,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-#.env.local
+.env.local
 
 # vercel
 .vercel
@@ -40,12 +44,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
 # Contentlayer
 .contentlayer
 
-tes.txt
-.env.local
 public/sw.js
-tes.pdf
-sw.js
