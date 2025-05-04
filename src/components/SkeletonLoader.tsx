@@ -1,18 +1,13 @@
-import React from 'react';
+"use client";
 
-interface SkeletonLoaderProps {
-  width?: string;
-  height?: string;
-  className?: string;
-}
-
-const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ width = '100%', height = '1rem', className = '' }) => {
+export default function SkeletonLoader({ className = "" }: { className?: string }) {
   return (
     <div
       className={`animate-pulse bg-gray-300 dark:bg-gray-700 rounded ${className}`}
-      style={{ width, height }}
-    />
+      aria-busy="true"
+      aria-label="Loading"
+    >
+      &nbsp;
+    </div>
   );
-};
-
-export default SkeletonLoader;
+}

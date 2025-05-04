@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
+import { AnimatePresence, motion } from "framer-motion";
+import Layout from "../components/Layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +60,19 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>
-          <ClientLayout>{children}</ClientLayout>
+          <Layout>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={locale}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ClientLayout>{children}</ClientLayout>
+              </motion.div>
+            </AnimatePresence>
+          </Layout>
         </Providers>
       </body>
     </html>
