@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -9,10 +9,30 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [usernameValid, setUsernameValid] = useState(true);
+  const [emailValid, setEmailValid] = useState(true);
+  const [passwordValid, setPasswordValid] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    setUsernameValid(username.trim().length > 0);
+  }, [username]);
+
+  useEffect(() => {
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    setEmailValid(emailRegex.test(email));
+  }, [email]);
+
+  useEffect(() => {
+    setPasswordValid(password.length >= 6);
+  }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!usernameValid || !emailValid || !passwordValid) {
+      setError('Mohon perbaiki input yang salah');
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -56,11 +76,20 @@ export default function Register() {
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${
+                  usernameValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+                }`}
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                aria-invalid={!usernameValid}
+                aria-describedby="username-error"
               />
+              {!usernameValid && (
+                <p id="username-error" className="text-red-600 text-xs mt-1">
+                  Username tidak boleh kosong.
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -71,11 +100,20 @@ export default function Register() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${
+                  emailValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+                }`}
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                aria-invalid={!emailValid}
+                aria-describedby="email-error"
               />
+              {!emailValid && (
+                <p id="email-error" className="text-red-600 text-xs mt-1">
+                  Email tidak valid.
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -86,11 +124,20 @@ export default function Register() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${
+                  passwordValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
+                }`}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={!passwordValid}
+                aria-describedby="password-error"
               />
+              {!passwordValid && (
+                <p id="password-error" className="text-red-600 text-xs mt-1">
+                  Password harus minimal 6 karakter.
+                </p>
+              )}
             </div>
           </div>
 
@@ -101,8 +148,8 @@ export default function Register() {
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={loading || !usernameValid || !emailValid || !passwordValid}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               {loading ? 'Loading...' : 'Sign up'}
             </button>
