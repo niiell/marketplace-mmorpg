@@ -40,7 +40,7 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
         return;
       }
 
-      let evidenceUrl = null;
+      let evidenceUrl: string | null = null;
       if (evidenceFile) {
         const fileExt = evidenceFile.name.split('.').pop();
         const fileName = `${user.id}_${Date.now()}.${fileExt}`;

@@ -13,7 +13,7 @@ export default function LanguageSwitcher() {
   const pathname = usePathname();
 
   const changeLocale = (locale: string) => {
-    const segments = pathname.split("/");
+    const segments = (pathname ?? "").split("/");
     if (locales.some((l) => l.code === segments[1])) {
       segments[1] = locale;
     } else {

@@ -9,9 +9,19 @@ import DisputeForm from '../../src/components/DisputeForm';
 import { useState } from 'react';
 import { useCurrency } from '../../src/context/CurrencyContext';
 
+type Dispute = {
+  id: number;
+  listing_id: number;
+  user_id: number;
+  reason: string;
+  status: string;
+  created_at: string;
+  // Add other fields as needed based on your database schema
+};
+
 export default function ListingDetail({ listing, reviews: initialReviews }: any) {
   const [reviews, setReviews] = useState(initialReviews);
-  const [disputes, setDisputes] = useState([]);
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
   const { format } = useCurrency();
 
   if (!listing) return <div>Not found</div>;

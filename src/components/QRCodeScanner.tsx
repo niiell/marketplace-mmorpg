@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import dynamic from "next/dynamic";
-
-const QrReader = dynamic(() => import("react-qr-reader"), { ssr: false });
+import { useEffect, useRef } from "react";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 
 interface QRCodeScannerProps {
   onScan: (data: string | null) => void;
@@ -11,16 +9,39 @@ interface QRCodeScannerProps {
 }
 
 export default function QRCodeScanner({ onScan, onError }: QRCodeScannerProps) {
-  const [delay] = useState(300);
+  const qrCodeRegionId = "qr-code-region";
+  const html5QrcodeScannerRef = useRef<Html5Qrcode | null>(null);
 
-  return (
-    <div>
-      <QrReader
-        delay={delay}
-        onError={onError}
-        onScan={onScan}
-        style={{ width: "100%" }}
-      />
-    </div>
-  );
+  useEffect(() => {
+    if (!html5QrcodeScannerRef.current) {
+      html5QrcodeScannerRef.current = new Html5Qrcode(qrCodeRegionId);
+    }
+
+    const config = { fps: 10, qrbox: 250 };
+
+    html5QrcodeScannerRef.current
+      .start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          onScan(decodedText);
+        },
+        (errorMessage) => {
+          if (onError) onError(errorMessage);
+        }
+      )
+      .catch((err) => {
+        if (onError) onError(err);
+      });
+
+    return () => {
+      if (html5QrcodeScannerRef.current) {
+        html5QrcodeScannerRef.current.stop().catch(() => {
+          // ignore errors on stop
+        });
+      }
+    };
+  }, [onScan, onError]);
+
+  return <div id={qrCodeRegionId} style={{ width: "100%" }} />;
 }
