@@ -1,5 +1,7 @@
 import { allPages } from '../../../../.contentlayer/generated'
 import { notFound } from 'next/navigation'
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import { serialize } from 'next-mdx-remote/serialize'
 
 export async function generateStaticParams() {
   return allPages.map((page) => ({
@@ -15,10 +17,12 @@ export default async function Page(props: any) {
     notFound()
   }
 
+  const mdxSource = await serialize(page.body.raw)
+
   return (
     <article className="prose max-w-none mx-auto p-4">
       <h1>{page.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: page.body.html }} />
+      <MDXRemote source={mdxSource} />
     </article>
   )
 }
