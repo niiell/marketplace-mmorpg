@@ -1,27 +1,33 @@
-import { allPages } from '@contentlayer/generated'
-import { notFound } from 'next/navigation'
-import { MDXRemote } from 'next-mdx-remote/rsc'
+import fs from 'fs'
+import path from 'path'
+import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import { notFound } from 'next/navigation'
+
+const contentDirectory = path.join(process.cwd(), 'content/pages')
 
 export async function generateStaticParams() {
-  return allPages.map((page) => ({
-    slug: page._raw.flattenedPath,
+  const filenames = fs.readdirSync(contentDirectory)
+  return filenames.map((filename) => ({
+    slug: filename.replace(/\.mdx?$/, ''),
   }))
 }
 
 export default async function Page(props: any) {
   const slug = props.params.slug
-  const page = allPages.find((page) => page._raw.flattenedPath === slug)
-
-  if (!page) {
+  const fullPath = path.join(contentDirectory, `${slug}.mdx`)
+  if (!fs.existsSync(fullPath)) {
     notFound()
   }
 
-  const mdxSource = await serialize(page.body.raw)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  const { content, data } = matter(fileContents)
+  const mdxSource = await serialize(content)
 
   return (
     <article className="prose max-w-none mx-auto p-4">
-      <h1>{page.title}</h1>
+      <h1>{data.title || slug}</h1>
       <MDXRemote source={mdxSource} />
     </article>
   )

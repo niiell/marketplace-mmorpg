@@ -24,6 +24,7 @@
     "contentlayer": "^0.3.4",
     "firebase": "^11.6.1",
     "framer-motion": "^12.9.4",
+    "gray-matter": "^4.0.3",
     "gsap": "^3.13.0",
     "html5-qrcode": "^2.3.8",
     "lighthouse": "^12.6.0",
