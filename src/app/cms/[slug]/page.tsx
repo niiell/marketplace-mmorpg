@@ -1,4 +1,4 @@
-import { allPages } from '../../../../.contentlayer/generated'
+import { allPages } from '@contentlayer/generated'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { serialize } from 'next-mdx-remote/serialize'
