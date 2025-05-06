@@ -1,0 +1,117 @@
+openapi: 3.0.3
+info:
+  title: Marketplace MMORPG API
+  version: 1.0.0
+  description: API specification for Marketplace MMORPG backend services.
+servers:
+  - url: https://api.example.com
+paths:
+  /api/transaction/approve:
+    post:
+      summary: Approve a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+              required:
+                - transaction_id
+      responses:
+        '200':
+          description: Transaction approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal server error
+  /api/transaction/deliver:
+    post:
+      summary: Mark transaction as delivered
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+              required:
+                - transaction_id
+      responses:
+        '200':
+          description: Transaction marked as delivered
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+  /api/transaction/confirm:
+    post:
+      summary: Confirm a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+              required:
+                - transaction_id
+      responses:
+        '200':
+          description: Transaction confirmed
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+  /api/checkout:
+    post:
+      summary: Checkout process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+                amount:
+                  type: number
+                buyer_id:
+                  type: string
+              required:
+                - transaction_id
+                - amount
+                - buyer_id
+      responses:
+        '200':
+          description: Checkout successful
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error

@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
 import Layout from "../components/Layout";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,6 +65,9 @@ export default async function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>
           <Layout>
+            <header className="p-4 flex justify-end">
+              <DarkModeToggle />
+            </header>
             <ClientLayout>{children}</ClientLayout>
           </Layout>
         </Providers>
