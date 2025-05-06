@@ -17,7 +17,10 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       setUser(user);
       const [{ data: listings }, { data: orders }, { data: profile }] = await Promise.all([
         supabase.from('listings').select('*').eq('seller_id', user.id),

@@ -1,6 +1,6 @@
-import CheckoutClient from './CheckoutClient';
+import CheckoutWrapper from "./CheckoutWrapper";
 
 export default async function CheckoutPage({ params }: { params: Promise<{ listingId: string }> }) {
   const resolvedParams = await params;
-  return <CheckoutClient listingId={resolvedParams.listingId} />;
+  return <CheckoutWrapper listingId={resolvedParams.listingId} />;
 }
