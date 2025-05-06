@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from '../../../lib/supabase';
