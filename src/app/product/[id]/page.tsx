@@ -111,22 +111,34 @@ export default function ProductDetailPage() {
             {Array.isArray(product.images) && product.images.length > 0 ? (
               <Swiper spaceBetween={16} slidesPerView={1} className="rounded-lg shadow">
                 {product.images.map((img: string, idx: number) => (
-                  <SwiperSlide key={idx}>
-                    <img src={img} alt={product.title + ' ' + (idx + 1)} className="w-full h-64 object-cover rounded-lg" />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            ) : (
-              <Card shadow="sm">
-                <CardBody className="overflow-visible p-0">
-                  <img
-                    src={product.image_url}
-                    alt={product.title}
-                    className="w-full h-64 object-cover rounded-lg shadow"
-                  />
-                </CardBody>
-              </Card>
-            )}
+              <SwiperSlide key={idx}>
+                <Image
+                  src={img}
+                  alt={product.title + ' ' + (idx + 1)}
+                  className="w-full h-64 object-cover rounded-lg"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  placeholder="blur"
+                  blurDataURL="/placeholder.png"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <Card shadow="sm">
+            <CardBody className="overflow-visible p-0">
+              <Image
+                src={product.image_url}
+                alt={product.title}
+                className="w-full h-64 object-cover rounded-lg shadow"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                placeholder="blur"
+                blurDataURL="/placeholder.png"
+              />
+            </CardBody>
+          </Card>
+        )}
           </div>
 
           {/* Product Details */}

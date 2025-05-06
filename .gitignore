@@ -48,3 +48,6 @@ next-env.d.ts
 .contentlayer
 
 sw.js
+
+.next/
+.github/

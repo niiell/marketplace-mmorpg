@@ -192,11 +192,17 @@ export default function NewListing() {
             className="mt-1 block w-full"
           />
           {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="mt-2 h-32 w-32 object-cover rounded-lg"
-            />
+            <div className="relative mt-2 h-32 w-32">
+              <Image
+                src={imagePreview}
+                alt="Preview"
+                className="rounded-lg object-cover"
+                fill
+                sizes="128px"
+                placeholder="blur"
+                blurDataURL="/placeholder.png"
+              />
+            </div>
           )}
         </div>
 

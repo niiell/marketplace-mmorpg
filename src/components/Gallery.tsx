@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface GalleryProps {
   images: string[];
@@ -16,10 +17,14 @@ export default function Gallery({ images }: GalleryProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="relative aspect-square">
-        <img
+        <Image
           src={images[selectedImage]}
           alt="Selected product"
           className="w-full h-full object-cover rounded-lg"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          placeholder="blur"
+          blurDataURL="/placeholder.png"
         />
       </div>
       <div className="grid grid-cols-3 gap-2">
@@ -34,10 +39,14 @@ export default function Gallery({ images }: GalleryProps) {
             aria-label={`View image ${index + 1}`}
             tabIndex={0}
           >
-            <img
+            <Image
               src={image}
               alt={`Product thumbnail ${index + 1}`}
               className="w-full h-full object-cover rounded-lg"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              placeholder="blur"
+              blurDataURL="/placeholder.png"
             />
           </button>
         ))}

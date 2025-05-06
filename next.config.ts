@@ -31,6 +31,8 @@ const withPWA = require('next-pwa')({
   ]
 });
 
+const path = require('path');
+
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
@@ -64,7 +66,16 @@ const nextConfig = {
         destination: '/landing',
       },
     ];
-  }
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      components: path.resolve(__dirname, 'src/components'),
+      utils: path.resolve(__dirname, 'src/utils'),
+      generated: path.resolve(__dirname, 'src/generated'),
+    };
+    return config;
+  },
 };
 
 module.exports = withPWA(nextConfig);

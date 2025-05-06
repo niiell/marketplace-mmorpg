@@ -28,6 +28,15 @@
       "@contentlayer/*": [
         ".contentlayer/*"
       ],
+      "components/*": [
+        "src/components/*"
+      ],
+      "utils/*": [
+        "src/utils/*"
+      ],
+      "generated/*": [
+        "src/generated/*"
+      ],
       "*": [
         "./src/*"
       ]
