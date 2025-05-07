@@ -10,9 +10,11 @@ export default function RegisterPage() {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +29,12 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    if (formData.password !== formData.confirmPassword) {
+      setError("Password dan konfirmasi password tidak cocok.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email: formData.email,
@@ -40,6 +48,9 @@ export default function RegisterPage() {
 
       if (error) throw error;
 
+      setError("");
+      setSuccess("Link verifikasi telah dikirim ke email Anda.");
+
       // Trigger email notification for registration (example)
       await fetch('/api/notifications/send-registration-email', {
         method: 'POST',
@@ -47,7 +58,11 @@ export default function RegisterPage() {
         body: JSON.stringify({ email: formData.email, username: formData.username }),
       });
 
-      router.push("/login?registered=true");
+      // Optionally, you can clear the form or keep it
+      // setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+
+      // Comment out redirect to show feedback on same page
+      // router.push("/login?registered=true");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -103,8 +118,27 @@ export default function RegisterPage() {
           />
         </div>
 
+        <div>
+          <label htmlFor="confirmPassword" className="block mb-1">
+            Konfirmasi Password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+            required
+            minLength={6}
+          />
+        </div>
+
         {error && (
           <div className="text-red-600 text-sm mt-2">{error}</div>
+        )}
+
+        {success && (
+          <div className="text-green-600 text-sm mt-2">{success}</div>
         )}
 
         <button

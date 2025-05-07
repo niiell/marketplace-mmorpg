@@ -15,6 +15,7 @@ type FormData = z.infer<typeof schema>;
 export default function ResetPasswordPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resetComplete, setResetComplete] = useState(false);
   const {
     register,
     handleSubmit,
@@ -31,36 +32,43 @@ export default function ResetPasswordPage() {
       setError(error.message);
     } else {
       setMessage('Link reset password telah dikirim ke email Anda.');
+      setResetComplete(true);
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       <h1 className="text-2xl font-bold mb-4">Reset Password</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block mb-1">Email</label>
-          <input
-            id="email"
-            type="email"
-            className="w-full border rounded px-3 py-2"
-            {...register('email')}
+      {!resetComplete ? (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block mb-1">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="w-full border rounded px-3 py-2"
+              {...register('email')}
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
             disabled={isSubmitting}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-          )}
+          >
+            {isSubmitting ? 'Mengirim...' : 'Kirim Link Reset'}
+          </button>
+          {error && <p className="text-red-600 mt-2">{error}</p>}
+        </form>
+      ) : (
+        <div className="text-center">
+          <p className="text-green-600 mb-4">{message}</p>
+          <a href="/login" className="text-blue-600 hover:underline">Kembali ke Login</a>
         </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Mengirim...' : 'Kirim Link Reset'}
-        </button>
-        {message && <p className="text-green-600 mt-2">{message}</p>}
-        {error && <p className="text-red-600 mt-2">{error}</p>}
-      </form>
+      )}
     </div>
   );
 }

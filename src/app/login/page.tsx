@@ -33,11 +33,11 @@ export default function LoginPage() {
     }
     // Cek verifikasi email
     const user = signInData.user;
-    if (!user?.email_confirmed_at) {
+    if (user?.confirmation_sent_at && !user?.confirmed_at) {
       setError("Email Anda belum diverifikasi. Silakan cek email Anda untuk verifikasi.");
       return;
     }
-    router.push("/dashboard");
+    router.replace("/dashboard");
   };
 
   return (

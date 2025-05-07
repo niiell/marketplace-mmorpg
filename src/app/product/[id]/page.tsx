@@ -7,11 +7,13 @@ import gsap from "gsap";
 import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/react";
 import ChatButton from '../../../components/ChatButton';
 import ReviewForm from '../../../components/ReviewForm';
+import AuthGuard from '../../../components/AuthGuard';
 import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Modal from '../../../components/Modal';
+import SkeletonLoader from '../../../components/SkeletonLoader';
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -64,7 +66,7 @@ export default function ProductDetailPage() {
   }, [id]);
 
   if (!product) {
-    return <div>Loading...</div>;
+    return <SkeletonLoader />;
   }
 
   return (
@@ -155,7 +157,9 @@ export default function ProductDetailPage() {
               )}
             </div>
             <div className="flex gap-4 product-action">
+            <AuthGuard>
               <ChatButton listingId={Number(id)} />
+            </AuthGuard>
               <NextUIButton
                 color="success"
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -178,6 +182,9 @@ export default function ProductDetailPage() {
           >
             Tulis Ulasan
           </button>
+          <AuthGuard>
+            <ReviewForm listingId={id as string} onReviewSubmitted={() => setIsReviewModalOpen(false)} />
+          </AuthGuard>
         </div>
 
         {/* Dispute */}
