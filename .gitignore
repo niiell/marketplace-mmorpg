@@ -47,7 +47,6 @@ next-env.d.ts
 # Contentlayer
 .contentlayer
 
-sw.js
-
 .next/
 .github/
+public/sw.js
