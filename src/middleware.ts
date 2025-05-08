@@ -4,6 +4,12 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 
 const protectedPaths = ['/dashboard', '/listing/new', '/admin'];
 
+/**
+ * Middleware function to handle authentication and security headers.
+ * 
+ * @param {NextRequest} req - The incoming request.
+ * @returns {Promise<NextResponse>} The response to be sent back to the client.
+ */
 export async function middleware(req: NextRequest) {
   try {
     const { pathname } = req.nextUrl;
@@ -20,7 +26,7 @@ export async function middleware(req: NextRequest) {
       'X-XSS-Protection': '1; mode=block',
     };
 
-    // Cek apakah path perlu proteksi
+    // Check if the path needs protection
     if (protectedPaths.some((path) => pathname.startsWith(path))) {
       try {
         const res = NextResponse.next();
@@ -41,7 +47,7 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(loginUrl);
         }
 
-        // Role-based: hanya admin bisa akses /admin
+        // Role-based: only admin can access /admin
         if (pathname.startsWith('/admin')) {
           const role = session.user.app_metadata?.role;
           if (role !== 'admin' && role !== 'superadmin') {
@@ -69,6 +75,9 @@ export async function middleware(req: NextRequest) {
   }
 }
 
+/**
+ * Configuration for the middleware.
+ */
 export const config = {
   matcher: ['/dashboard', '/listing/new', '/admin', '/marketplace', '/product/:path*', '/chat/:path*', '/'],
 };

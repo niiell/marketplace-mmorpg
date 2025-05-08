@@ -11,7 +11,7 @@ export default function ListingCard({ listing }: { listing: any }) {
   const locale = currency === "IDR" ? "id-ID" : currency === "PHP" ? "en-PH" : currency === "THB" ? "th-TH" : "en-US";
 
   return (
-    <Link href={`/marketplace/${listing.id}`}>
+    <Link href={`/marketplace/${listing.id}`} className="block">
       <div className="bg-white rounded shadow p-4 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
         <Image
           src={listing.image_url}

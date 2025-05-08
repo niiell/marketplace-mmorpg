@@ -10,7 +10,8 @@ create table if not exists roles (
 create table if not exists user_roles (
   user_id uuid references auth.users(id) on delete cascade,
   role_id int references roles(id),
-  primary key (user_id, role_id)
+  primary key (user_id, role_id),
+  unique (user_id, role_id)
 );
 
 -- PROFILES
@@ -228,3 +229,30 @@ create policy "User can access their notifications"
   on notifications
   for all
   using (user_id = auth.uid());
+
+-- INDEXES
+create index idx_user_roles_user_id on user_roles (user_id);
+create index idx_user_roles_role_id on user_roles (role_id);
+
+create index idx_listings_seller_id on listings (seller_id);
+create index idx_listings_category_id on listings (category_id);
+create index idx_listings_game_id on listings (game_id);
+
+create index idx_transactions_buyer_id on transactions (buyer_id);
+create index idx_transactions_seller_id on transactions (seller_id);
+create index idx_transactions_listing_id on transactions (listing_id);
+
+create index idx_transaction_logs_transaction_id on transaction_logs (transaction_id);
+
+create index idx_chats_buyer_id on chats (buyer_id);
+create index idx_chats_seller_id on chats (seller_id);
+create index idx_chats_listing_id on chats (listing_id);
+
+create index idx_messages_chat_id on messages (chat_id);
+create index idx_messages_sender_id on messages (sender_id);
+
+create index idx_reviews_reviewer_id on reviews (reviewer_id);
+create index idx_reviews_reviewee_id on reviews (reviewee_id);
+create index idx_reviews_transaction_id on reviews (transaction_id);
+
+create index idx_notifications_user_id on notifications (user_id);

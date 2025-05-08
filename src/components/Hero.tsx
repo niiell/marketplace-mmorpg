@@ -4,15 +4,25 @@ import gsap from 'gsap';
 
 export default function Hero() {
   const textRef = useRef<HTMLDivElement>(null);
+  const tl = useRef<gsap.core.Timeline>(null);
 
   useEffect(() => {
     if (textRef.current) {
-      gsap.fromTo(
+      tl.current = gsap.timeline({
+        defaults: {
+          ease: 'power2.out',
+          duration: 1,
+        },
+      });
+      tl.current.fromTo(
         textRef.current.children,
         { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, stagger: 0.15, duration: 1, ease: 'power2.out' }
+        { opacity: 1, y: 0, stagger: 0.15 }
       );
     }
+    return () => {
+      if (tl.current) tl.current.kill();
+    };
   }, []);
 
   return (

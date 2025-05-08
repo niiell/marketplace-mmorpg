@@ -52,37 +52,37 @@ export default function RegisterPage() {
     <>
       <h1>Daftar</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
+        <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
             {...register("email")}
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${errors.email ? "border-red-600" : ""}`}
             autoComplete="email"
           />
           {errors.email && <p className="text-red-600">{errors.email.message}</p>}
         </div>
 
-        <div>
+        <div className="form-group">
           <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
             {...register("password")}
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${errors.password ? "border-red-600" : ""}`}
             autoComplete="new-password"
           />
           {errors.password && <p className="text-red-600">{errors.password.message}</p>}
         </div>
 
-        <div>
+        <div className="form-group">
           <label htmlFor="confirmPassword">Konfirmasi Password</label>
           <input
             id="confirmPassword"
             type="password"
             {...register("confirmPassword")}
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${errors.confirmPassword ? "border-red-600" : ""}`}
             autoComplete="new-password"
           />
           {errors.confirmPassword && <p className="text-red-600">{errors.confirmPassword.message}</p>}
@@ -91,7 +91,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className={`bg-blue-600 text-white px-4 py-2 rounded ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {isSubmitting ? "Mendaftar..." : "Daftar"}
         </button>

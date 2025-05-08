@@ -15,11 +15,17 @@ export default function MarketplacePage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const category = searchParams?.get("category") || null;
     setFilterCategory(category);
   }, [searchParams]);
+
+  useEffect(() => {
+    const uniqueCategories = [...new Set(allListings.map((l) => l.category))];
+    setCategories(uniqueCategories);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -55,7 +61,7 @@ export default function MarketplacePage() {
             className="border border-gray-300 rounded p-2"
           >
             <option value="">All Categories</option>
-            {[...new Set(allListings.map((l) => l.category))].map((cat) => (
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>

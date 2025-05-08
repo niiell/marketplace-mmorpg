@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
 # Temporarily disable automated testing during commits
-exit 0
+# Exit with a non-zero status code to indicate failure
+exit 1

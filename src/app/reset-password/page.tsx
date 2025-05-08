@@ -1,4 +1,3 @@
-// Halaman Reset Password dengan React Hook Form, Zod, dan Supabase Auth
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -16,10 +15,11 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resetComplete, setResetComplete] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -27,12 +27,19 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: FormData) => {
     setMessage(null);
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(data.email);
-    if (error) {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email);
+      if (error) {
+        setError(error.message);
+      } else {
+        setMessage('Link reset password telah dikirim ke email Anda.');
+        setResetComplete(true);
+      }
+    } catch (error) {
       setError(error.message);
-    } else {
-      setMessage('Link reset password telah dikirim ke email Anda.');
-      setResetComplete(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -1,3 +1,5 @@
 {
-  "http://localhost:3000/landing": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1746500975828-92607.report.html"
+  "urls": {
+    "http://localhost:3000/landing": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1746500975828-92607.report.html"
+  }
 }

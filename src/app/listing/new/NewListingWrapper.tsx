@@ -2,11 +2,22 @@
 
 import dynamic from "next/dynamic";
 
-const NewListingClient = dynamic(() => import("./NewListingClient"), {
-  ssr: false,
-  loading: () => <div className="text-center py-12">Loading new listing form...</div>,
-});
+const NewListingClient = dynamic(
+  () => import("./NewListingClient"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="text-center py-12">
+        <p>Loading new listing form...</p>
+      </div>
+    ),
+  }
+);
 
 export default function NewListingWrapper() {
-  return <NewListingClient />;
+  return (
+    <div>
+      <NewListingClient />
+    </div>
+  );
 }

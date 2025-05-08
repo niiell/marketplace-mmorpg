@@ -11,13 +11,13 @@ export function Providers({
 }: {
   children: React.ReactNode;
   locale: string;
-  messages: any;
+  messages: Record<string, string>;
 }) {
   useFirebaseMessaging();
 
   return (
     <AuthProvider>
-      <IntlProvider locale={locale} messages={messages}>
+      <IntlProvider locale={locale} messages={messages} defaultLocale="en">
         {children}
       </IntlProvider>
     </AuthProvider>

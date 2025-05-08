@@ -2,12 +2,14 @@ declare module 'react-axe' {
   import { type ReactInstance } from 'react';
   import { type Container } from 'react-dom';
 
+  interface AxeRule {
+    id: string;
+    enabled: boolean;
+    [key: string]: any;
+  }
+
   interface AxeConfig {
-    rules?: Array<{
-      id: string;
-      enabled: boolean;
-      [key: string]: any;
-    }>;
+    rules?: AxeRule[];
     [key: string]: any;
   }
 

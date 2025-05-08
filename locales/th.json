@@ -1,13 +1,19 @@
 {
   "common": {
-    "home": "Home",
-    "marketplace": "Marketplace",
-    "dashboard": "Dashboard",
-    "login": "Login",
-    "register": "Register",
-    "logout": "Logout",
-    "chatButton": "Chat",
-    "dispute": "Dispute",
-    "review": "Review"
+    "navigation": {
+      "home": "Home",
+      "marketplace": "Marketplace",
+      "dashboard": "Dashboard"
+    },
+    "auth": {
+      "login": "Login",
+      "register": "Register",
+      "logout": "Logout"
+    },
+    "actions": {
+      "chatButton": "Chat",
+      "dispute": "Dispute",
+      "review": "Review"
+    }
   }
 }

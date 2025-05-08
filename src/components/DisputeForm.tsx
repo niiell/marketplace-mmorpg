@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -15,10 +13,15 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reasonValid, setReasonValid] = useState(true);
+  const [evidenceValid, setEvidenceValid] = useState(true);
 
   useEffect(() => {
     setReasonValid(reason.length >= 10 && reason.length <= 1000);
   }, [reason]);
+
+  useEffect(() => {
+    setEvidenceValid(evidenceFile !== null);
+  }, [evidenceFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -28,7 +31,7 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reasonValid) {
+    if (!reasonValid || !evidenceValid) {
       toast.error('Mohon perbaiki input yang salah');
       return;
     }
@@ -127,12 +130,28 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
           type="file"
           accept="image/*,application/pdf"
           onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 ${
+            evidenceValid ? '' : 'border-red-500 ring-red-500'
+          }`}
           aria-describedby="evidence-help"
         />
         <p id="evidence-help" className="text-xs text-gray-500 mt-1">
           Upload bukti pendukung dalam format gambar atau PDF.
         </p>
+        <AnimatePresence>
+          {!evidenceValid && (
+            <motion.p
+              id="evidence-error"
+              className="text-red-500 text-xs mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              role="alert"
+            >
+              Silakan upload bukti pendukung.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
       <motion.button

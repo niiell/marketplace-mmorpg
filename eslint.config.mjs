@@ -35,8 +35,9 @@ export default [
         },
       },
       globals: {
-        React: 'writable'
-      }
+        React: 'writable',
+        console: 'readonly',
+      },
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -52,7 +53,8 @@ export default [
       'jsx-a11y/aria-proptypes': 'error',
       'jsx-a11y/aria-unsupported-elements': 'error',
       'jsx-a11y/role-has-required-aria-props': 'error',
-      'jsx-a11y/role-supports-aria-props': 'error'
-    }
-  }
+      'jsx-a11y/role-supports-aria-props': 'error',
+      'no-console': 'warn',
+    },
+  },
 ];

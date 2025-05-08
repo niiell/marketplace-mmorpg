@@ -1,29 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const MAX_TOKENS = 500;
+const MODEL = "gpt-4";
 
 export async function POST(request: NextRequest) {
   if (!OPENAI_API_KEY) {
     return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
   }
 
-  const { message } = await request.json();
-
-  if (!message) {
-    return NextResponse.json({ error: "Missing message in request body" }, { status: 400 });
-  }
-
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const { message } = await request.json();
+
+    if (!message) {
+      return NextResponse.json({ error: "Missing message in request body" }, { status: 400 });
+    }
+
+    const response = await fetch(OPENAI_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4",
+        model: MODEL,
         messages: [{ role: "user", content: message }],
-        max_tokens: 500,
+        max_tokens: MAX_TOKENS,
       }),
     });
 

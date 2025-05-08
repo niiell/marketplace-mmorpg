@@ -14,13 +14,20 @@ firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
+messaging.onBackgroundMessage(async (payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/firebase-logo.png'
+    icon: '/firebase-logo.png',
+    badge: '/firebase-logo.png',
+    data: payload.data,
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    registration.showNotification(notificationTitle, notificationOptions);
+  } catch (error) {
+    console.error('Error showing notification:', error);
+  }
 });

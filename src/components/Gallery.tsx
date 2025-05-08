@@ -14,6 +14,10 @@ export default function Gallery({ images }: GalleryProps) {
     }
   };
 
+  const handleImageChange = (index: number) => {
+    setSelectedImage(index);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="relative aspect-square">
@@ -31,7 +35,7 @@ export default function Gallery({ images }: GalleryProps) {
         {images.map((image, index) => (
           <button
             key={index}
-            onClick={() => setSelectedImage(index)}
+            onClick={() => handleImageChange(index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={`relative aspect-square focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               selectedImage === index ? 'ring-2 ring-blue-500' : ''

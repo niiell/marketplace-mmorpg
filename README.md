@@ -69,7 +69,7 @@ For deployment:
 - `VERCEL_PROJECT_ID` - Project ID
 
 ## Project Structure
-```
+```markdown
 ├── src/                    # Main application code
 │   ├── app/               # Next.js 13 app directory
 │   ├── components/        # Reusable React components

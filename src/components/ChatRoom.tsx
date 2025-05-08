@@ -1,5 +1,4 @@
-'use client';
-
+```typescript
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { List, AutoSizer } from 'react-virtualized';
@@ -29,22 +28,29 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
   const listRef = useRef<List>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  // Fetch initial messages
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
-      if (!error && data) setMessages(data as Message[]);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('chat_id', chatId)
+          .order('created_at', { ascending: true });
+        if (error) {
+          console.error(error);
+        } else if (data) {
+          setMessages(data as Message[]);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchMessages();
   }, [chatId]);
 
-  // Subscribe to new messages
   useEffect(() => {
     const channel = supabase
       .channel('chat-messages')
@@ -66,32 +72,41 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
     };
   }, [chatId]);
 
-  // Fetch unread count
   useEffect(() => {
     const fetchUnread = async () => {
-      const { count, error } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('chat_id', chatId)
-        .neq('sender_id', currentUserId);
-      if (!error && typeof count === 'number') setUnreadCount(count);
+      try {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('chat_id', chatId)
+          .neq('sender_id', currentUserId);
+        if (error) {
+          console.error(error);
+        } else if (typeof count === 'number') {
+          setUnreadCount(count);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     };
     fetchUnread();
   }, [chatId, currentUserId, messages]);
 
-  // Send message
   const sendMessage = async () => {
     if (!input.trim()) return;
-    await supabase.from('messages').insert({
-      chat_id: chatId,
-      sender_id: currentUserId,
-      content: input,
-    });
-    setInput('');
-    setInputValid(null);
+    try {
+      await supabase.from('messages').insert({
+        chat_id: chatId,
+        sender_id: currentUserId,
+        content: input,
+      });
+      setInput('');
+      setInputValid(null);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  // Input change handler with real-time validation
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInput(value);
@@ -104,7 +119,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
     }
   };
 
-  // Render each message
   const rowRenderer = useCallback(
     ({ index, key, style }: { index: number; key: string; style: React.CSSProperties }) => {
       const msg = messages[index];
@@ -131,7 +145,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
     [messages, currentUserId]
   );
 
-  // Auto scroll to bottom on new message
   useEffect(() => {
     if (listRef.current && !shouldReduceMotion) {
       listRef.current.scrollToRow(messages.length - 1);
@@ -184,6 +197,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
         <button
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded smoke-button"
           onClick={sendMessage}
+          disabled={!inputValid}
         >
           Send
         </button>
@@ -191,4 +205,4 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
     </div>
   );
 };
-
+```

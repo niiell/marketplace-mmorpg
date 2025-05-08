@@ -8,6 +8,16 @@
     "logout": "Logout",
     "chatButton": "Chat",
     "dispute": "Dispute",
-    "review": "Review"
+    "review": "Review",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "errors": {
+    "invalidCredentials": "Invalid credentials",
+    "serverError": "Server error"
+  },
+  "success": {
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Registration successful"
   }
 }

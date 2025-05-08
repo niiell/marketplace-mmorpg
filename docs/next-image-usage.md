@@ -25,6 +25,8 @@ export default function ListingCard() {
         width={600}
         height={400}
         priority={true} // for above-the-fold images
+        loading="lazy" // lazy load images
+        objectFit="cover" // maintain aspect ratio
       />
     </div>
   );
@@ -42,6 +44,7 @@ You can use layout="responsive" to make images scale with their container.
   width={600}
   height={400}
   layout="responsive"
+  objectFit="contain" // maintain aspect ratio
 />
 ```
 
@@ -59,6 +62,7 @@ In `pages/marketplace/[id].tsx` or relevant components, replace `<img>` tags wit
 const nextConfig = {
   images: {
     domains: ['example.com', 'cdn.example.com'],
+    formats: ['image/webp'], // enable webp format
   },
 };
 

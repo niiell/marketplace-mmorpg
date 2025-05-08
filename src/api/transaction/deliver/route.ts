@@ -13,19 +13,22 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Cek apakah user adalah seller transaksi ini
-    const { data: trx } = await supabase.from('transactions').select('id, seller_id, status_order, buyer_id').eq('id', transaction_id).single();
+    const { data: trx, error: trxError } = await supabase.from('transactions').select('id, seller_id, status_order, buyer_id').eq('id', transaction_id).single();
+    if (trxError) throw trxError;
     if (!trx) return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     if (trx.seller_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     if (trx.status_order !== 'paid') return NextResponse.json({ error: 'Order not paid' }, { status: 400 });
 
     // Update status_order ke 'delivered'
-    await supabase.from('transactions').update({ status_order: 'delivered', updated_at: new Date().toISOString() }).eq('id', transaction_id);
+    const { error: updateError } = await supabase.from('transactions').update({ status_order: 'delivered', updated_at: new Date().toISOString() }).eq('id', transaction_id);
+    if (updateError) throw updateError;
 
     // Send email notification to buyer
-    const { data: buyer } = await supabase.from('profiles').select('email').eq('user_id', trx.buyer_id).single();
+    const { data: buyer, error: buyerError } = await supabase.from('profiles').select('email').eq('user_id', trx.buyer_id).single();
+    if (buyerError) throw buyerError;
 
     if (buyer?.email) {
-      await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
+      const notificationResponse = await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -34,6 +37,7 @@ export async function POST(req: NextRequest) {
           message: `Pesanan dengan ID ${transaction_id} telah dikirim oleh penjual.`,
         }),
       });
+      if (!notificationResponse.ok) throw new Error(`Failed to send notification: ${notificationResponse.statusText}`);
     }
 
     // (Opsional) Tambah log

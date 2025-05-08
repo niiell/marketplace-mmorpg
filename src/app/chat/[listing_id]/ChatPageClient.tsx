@@ -1,3 +1,4 @@
+```javascript
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
@@ -7,23 +8,32 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 const fetcher = async (listing_id: string) => {
-  // Get chat room for this listing and current user
-  const { data: userData } = await supabase.auth.getUser();
-  const user_id = userData.user?.id;
-  if (!user_id) return { chat: null, messages: [] };
-  const { data: chat } = await supabase
-    .from("chats")
-    .select("id")
-    .eq("listing_id", listing_id)
-    .or(`buyer_id.eq.${user_id},seller_id.eq.${user_id}`)
-    .single();
-  if (!chat) return { chat: null, messages: [] };
-  const { data: messages } = await supabase
-    .from("messages")
-    .select("id, sender_id, content, created_at")
-    .eq("chat_id", chat.id)
-    .order("created_at", { ascending: true });
-  return { chat, messages: messages || [] };
+  try {
+    // Get chat room for this listing and current user
+    const { data: userData } = await supabase.auth.getUser();
+    const user_id = userData.user?.id;
+    if (!user_id) return { chat: null, messages: [] };
+
+    const { data: chat } = await supabase
+      .from("chats")
+      .select("id")
+      .eq("listing_id", listing_id)
+      .or(`buyer_id.eq.${user_id},seller_id.eq.${user_id}`)
+      .single();
+
+    if (!chat) return { chat: null, messages: [] };
+
+    const { data: messages } = await supabase
+      .from("messages")
+      .select("id, sender_id, content, created_at")
+      .eq("chat_id", chat.id)
+      .order("created_at", { ascending: true });
+
+    return { chat, messages: messages || [] };
+  } catch (error) {
+    console.error(error);
+    return { chat: null, messages: [] };
+  }
 };
 
 export default function ChatPage() {
@@ -36,7 +46,7 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat & messages
-  const { data, mutate } = useSWR(listing_id, fetcher, { refreshInterval: 0 });
+  const { data, mutate, error } = useSWR(listing_id, fetcher, { refreshInterval: 0 });
 
   // Get current user id
   useEffect(() => {
@@ -70,40 +80,47 @@ export default function ChatPage() {
   const onSend = async (form: any) => {
     if (!form.content || !data?.chat || !userId) return;
     setSending(true);
-    const { error } = await supabase.from("messages").insert({
-      chat_id: data.chat.id,
-      sender_id: userId,
-      content: form.content,
-    });
-    setSending(false);
-    if (error) toast.error("Gagal mengirim pesan");
-    else {
-      reset();
-      // Send message to AI chatbot API
-      try {
-        const response = await fetch("/api/chatbot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: form.content }),
-        });
-        const json = await response.json();
-        if (json.message) {
-          // Insert AI response as a message from system (sender_id = 0)
-          await supabase.from("messages").insert({
-            chat_id: data.chat.id,
-            sender_id: 0,
-            content: json.message,
+    try {
+      const { error } = await supabase.from("messages").insert({
+        chat_id: data.chat.id,
+        sender_id: userId,
+        content: form.content,
+      });
+      if (error) {
+        toast.error("Gagal mengirim pesan");
+      } else {
+        reset();
+        // Send message to AI chatbot API
+        try {
+          const response = await fetch("/api/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: form.content }),
           });
-          mutate();
-        } else if (json.error) {
-          toast.error("AI Chatbot error: " + json.error);
+          const json = await response.json();
+          if (json.message) {
+            // Insert AI response as a message from system (sender_id = 0)
+            await supabase.from("messages").insert({
+              chat_id: data.chat.id,
+              sender_id: 0,
+              content: json.message,
+            });
+            mutate();
+          } else if (json.error) {
+            toast.error("AI Chatbot error: " + json.error);
+          }
+        } catch (err) {
+          toast.error("Failed to get AI response");
         }
-      } catch (err) {
-        toast.error("Failed to get AI response");
       }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSending(false);
     }
   };
 
+  if (error) return <div className="text-center py-12">Error loading chat...</div>;
   if (!data) return <div className="text-center py-12">Loading chat...</div>;
   if (!data.chat) return <div className="text-center py-12">Chat tidak ditemukan.</div>;
 
@@ -139,3 +156,4 @@ export default function ChatPage() {
     </div>
   );
 }
+```

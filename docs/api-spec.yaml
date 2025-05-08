@@ -18,6 +18,7 @@ paths:
               properties:
                 transaction_id:
                   type: integer
+                  description: Unique identifier for the transaction
               required:
                 - transaction_id
       responses:
@@ -30,8 +31,17 @@ paths:
                 properties:
                   success:
                     type: boolean
+                  message:
+                    type: string
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '401':
           description: Unauthorized
         '403':
@@ -52,13 +62,30 @@ paths:
               properties:
                 transaction_id:
                   type: integer
+                  description: Unique identifier for the transaction
               required:
                 - transaction_id
       responses:
         '200':
           description: Transaction marked as delivered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '401':
           description: Unauthorized
         '500':
@@ -75,13 +102,30 @@ paths:
               properties:
                 transaction_id:
                   type: integer
+                  description: Unique identifier for the transaction
               required:
                 - transaction_id
       responses:
         '200':
           description: Transaction confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '401':
           description: Unauthorized
         '500':
@@ -98,10 +142,13 @@ paths:
               properties:
                 transaction_id:
                   type: integer
+                  description: Unique identifier for the transaction
                 amount:
                   type: number
+                  description: Total amount for the transaction
                 buyer_id:
                   type: string
+                  description: Unique identifier for the buyer
               required:
                 - transaction_id
                 - amount
@@ -109,8 +156,24 @@ paths:
       responses:
         '200':
           description: Checkout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '401':
           description: Unauthorized
         '500':

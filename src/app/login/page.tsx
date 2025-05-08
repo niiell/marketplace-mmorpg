@@ -26,25 +26,17 @@ function LoginForm() {
   const redirectedFrom = searchParams.get("redirectedFrom");
 
   const onSubmit = async (data: FormData) => {
-    console.log("Login form submitted with data:", data);
-    setError("");
     try {
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
-      console.log("Supabase signInWithPassword response:", signInData, error);
       if (error) {
-        console.error("Supabase login error:", error);
         setError(error.message || "Login gagal. Periksa email dan password Anda.");
         return;
       }
       const user = signInData.user;
-      console.log("User after signIn:", user);
-      // Remove email verification blocking check
-      // Refresh session to update auth state
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      console.log("Session after getSession:", sessionData, sessionError);
       if (sessionError) {
         setError("Gagal mendapatkan sesi pengguna.");
         return;
@@ -53,11 +45,12 @@ function LoginForm() {
         setError("Login gagal, sesi tidak ditemukan.");
         return;
       }
-      // Reload the page to ensure AuthContext updates user state
       window.location.href = redirectedFrom || "/dashboard";
     } catch (err) {
       console.error("Error during login:", err);
       setError("Terjadi kesalahan saat login. Silakan coba lagi.");
+    } finally {
+      setError("");
     }
   };
 

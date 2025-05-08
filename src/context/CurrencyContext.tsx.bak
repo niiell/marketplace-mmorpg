@@ -1,3 +1,4 @@
+```typescript
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -28,23 +29,22 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({ USD: 1 });
 
   useEffect(() => {
-    // Detect user locale
     const userLocale = navigator.language || "en-US";
     setLocale(userLocale);
     const detectedCurrency = localeCurrencyMap[userLocale] || "USD";
     setCurrency(detectedCurrency);
 
-    // Fetch conversion rates from an API or use static rates
-    // For example purposes, using static rates
-    const rates = {
-      USD: 1,
-      IDR: 15000,
-      PHP: 55,
-      THB: 35,
-      EUR: 0.9,
-      GBP: 0.8,
+    const fetchConversionRates = async () => {
+      try {
+        const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+        const data = await response.json();
+        setConversionRates(data.rates);
+      } catch (error) {
+        console.error("Failed to fetch conversion rates:", error);
+      }
     };
-    setConversionRates(rates);
+
+    fetchConversionRates();
   }, []);
 
   const convert = (value: number, toCurrency: string) => {
@@ -71,3 +71,4 @@ export const useCurrency = (): CurrencyContextType => {
   }
   return context;
 };
+```

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import '../../styles/smoke-effect.css';
@@ -19,26 +17,32 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
   const router = useRouter();
 
   useEffect(() => {
-    if (reason.trim().length === 0) {
-      setReasonValid(null);
-    } else if (reason.trim().length < 10) {
-      setReasonValid(false);
-    } else {
-      setReasonValid(true);
-    }
+    const validateReason = () => {
+      if (reason.trim().length === 0) {
+        setReasonValid(null);
+      } else if (reason.trim().length < 10) {
+        setReasonValid(false);
+      } else {
+        setReasonValid(true);
+      }
+    };
+    validateReason();
   }, [reason]);
 
   useEffect(() => {
-    if (evidenceUrl.trim().length === 0) {
-      setEvidenceUrlValid(null);
-    } else {
-      try {
-        new URL(evidenceUrl);
-        setEvidenceUrlValid(true);
-      } catch {
-        setEvidenceUrlValid(false);
+    const validateEvidenceUrl = () => {
+      if (evidenceUrl.trim().length === 0) {
+        setEvidenceUrlValid(null);
+      } else {
+        try {
+          new URL(evidenceUrl);
+          setEvidenceUrlValid(true);
+        } catch {
+          setEvidenceUrlValid(false);
+        }
       }
-    }
+    };
+    validateEvidenceUrl();
   }, [evidenceUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +100,7 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
           }`}
           placeholder="Describe the issue"
         />
+        {reasonValid === false && <p className="text-red-600 mt-1">Reason must be at least 10 characters long.</p>}
       </div>
       <div className="mb-4">
         <label htmlFor="evidenceUrl" className="block mb-1 font-medium">Evidence URL (optional)</label>
@@ -109,6 +114,7 @@ export default function DisputeForm({ transactionId, userId }: DisputeFormProps)
           }`}
           placeholder="Link to screenshots or chat logs"
         />
+        {evidenceUrlValid === false && <p className="text-red-600 mt-1">Invalid URL.</p>}
       </div>
       <button
         type="submit"

@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET(req: NextRequest) {
+const getDisputes = async () => {
   try {
     const { data, error } = await supabase
       .from('disputes')
@@ -14,12 +14,40 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      throw error;
     }
 
-    return NextResponse.json({ disputes: data });
+    return data;
   } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    throw err;
+  }
+};
+
+const updateDispute = async (id, status) => {
+  try {
+    const { data, error } = await supabase
+      .from('disputes')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+export async function GET(req: NextRequest) {
+  try {
+    const disputes = await getDisputes();
+    return NextResponse.json({ disputes });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -32,19 +60,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
-      .from('disputes')
-      .update({ status })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ dispute: data });
+    const dispute = await updateDispute(id, status);
+    return NextResponse.json({ dispute });
   } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

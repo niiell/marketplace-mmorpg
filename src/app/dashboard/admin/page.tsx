@@ -1,35 +1,37 @@
+```javascript
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+  });
   const [message, setMessage] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // For simplicity, save data to a mock API or local storage
-    // In real app, integrate with backend or file system (e.g. .mdx files)
     try {
-      // Example: POST to /api/admin/food (to be implemented)
       const res = await fetch("/api/admin/food", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, price, category }),
+        body: JSON.stringify(form),
       });
 
       if (res.ok) {
         setMessage("Food item saved successfully.");
-        setTitle("");
-        setDescription("");
-        setPrice("");
-        setCategory("");
+        setForm({
+          title: "",
+          description: "",
+          price: "",
+          category: "",
+        });
         router.refresh();
       } else {
         setMessage("Failed to save food item.");
@@ -37,6 +39,10 @@ export default function AdminDashboard() {
     } catch (error) {
       setMessage("Error saving food item.");
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.id]: e.target.value });
   };
 
   return (
@@ -51,8 +57,8 @@ export default function AdminDashboard() {
           <input
             id="title"
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={handleChange}
             required
             className="w-full border rounded px-3 py-2"
           />
@@ -63,8 +69,8 @@ export default function AdminDashboard() {
           </label>
           <textarea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={handleChange}
             required
             className="w-full border rounded px-3 py-2"
           />
@@ -76,8 +82,8 @@ export default function AdminDashboard() {
           <input
             id="price"
             type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            value={form.price}
+            onChange={handleChange}
             required
             className="w-full border rounded px-3 py-2"
           />
@@ -89,8 +95,8 @@ export default function AdminDashboard() {
           <input
             id="category"
             type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            value={form.category}
+            onChange={handleChange}
             required
             className="w-full border rounded px-3 py-2"
           />
@@ -105,3 +111,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+```

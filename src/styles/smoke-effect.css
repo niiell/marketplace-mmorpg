@@ -2,6 +2,7 @@
 .smoke-button {
   position: relative;
   overflow: visible;
+  transition: transform 0.3s ease;
 }
 
 .smoke-button::before {
@@ -35,6 +36,40 @@
 
 .input-error {
   border-color: #ef4444; /* red-500 */
+  animation: borderGlowRed 1s ease forwards;
+}
+
+@keyframes borderGlowGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 8px 4px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes borderGlowRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0);
+  }
+}
+
+/* Added CSS variables for easier color management */
+:root {
+  --green-500: #22c55e;
+  --red-500: #ef4444;
+}
+
+.input-valid {
+  border-color: var(--green-500);
+  animation: borderGlowGreen 1s ease forwards;
+}
+
+.input-error {
+  border-color: var(--red-500);
   animation: borderGlowRed 1s ease forwards;
 }
 

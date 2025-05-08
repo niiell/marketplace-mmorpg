@@ -10,6 +10,7 @@ interface WishlistButtonProps {
 export default function WishlistButton({ listingId }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchWishlistStatus = async () => {
@@ -22,13 +23,16 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
         }
 
         const res = await fetch(`/api/wishlist?user_id=${user.id}`);
-        if (!res.ok) throw new Error('Failed to fetch wishlist');
+        if (!res.ok) {
+          throw new Error(`Failed to fetch wishlist: ${res.statusText}`);
+        }
         const json = await res.json();
         if (json.wishlist) {
           setIsWishlisted(json.wishlist.some((item: any) => item.listing_id === listingId));
         }
       } catch (error) {
         console.error(error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -39,6 +43,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
 
   const toggleWishlist = async () => {
     setLoading(true);
+    setError(null);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       alert("Please login to manage your wishlist.");
@@ -46,22 +51,28 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
       return;
     }
 
-    if (isWishlisted) {
-      // Remove from wishlist
-      await fetch(`/api/wishlist?user_id=${user.id}&listing_id=${listingId}`, {
-        method: "DELETE",
-      });
-      setIsWishlisted(false);
-    } else {
-      // Add to wishlist
-      await fetch(`/api/wishlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id, listing_id: listingId }),
-      });
-      setIsWishlisted(true);
+    try {
+      if (isWishlisted) {
+        // Remove from wishlist
+        await fetch(`/api/wishlist?user_id=${user.id}&listing_id=${listingId}`, {
+          method: "DELETE",
+        });
+        setIsWishlisted(false);
+      } else {
+        // Add to wishlist
+        await fetch(`/api/wishlist`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, listing_id: listingId }),
+        });
+        setIsWishlisted(true);
+      }
+    } catch (error) {
+      console.error(error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -76,6 +87,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
       }`}
     >
       {isWishlisted ? "♥" : "♡"} Wishlist
+      {error && <span className="text-red-500 ml-2">{error}</span>}
     </button>
   );
 }

@@ -4,6 +4,10 @@ module.exports = {
       startServerCommand: 'npm run start',
       url: ['http://localhost:3000'],
       numberOfRuns: 3,
+      settings: {
+        chromeFlags: ['--no-sandbox', '--headless'],
+        extends: 'lighthouse:default',
+      },
     },
     assert: {
       assertions: {
@@ -23,8 +27,9 @@ module.exports = {
         'list': 'error',
         'meta-viewport': 'error',
         'tabindex': 'error',
-        'valid-lang': 'error'
+        'valid-lang': 'error',
       },
+      preset: 'lighthouse:recommended',
     },
     upload: {
       target: 'temporary-public-storage',

@@ -12,5 +12,13 @@ interface CheckoutWrapperProps {
 }
 
 export default function CheckoutWrapper({ listingId }: CheckoutWrapperProps) {
-  return <CheckoutClient listingId={listingId} />;
+  if (!listingId) {
+    throw new Error("listingId is required");
+  }
+
+  return (
+    <div>
+      <CheckoutClient listingId={listingId} />
+    </div>
+  );
 }

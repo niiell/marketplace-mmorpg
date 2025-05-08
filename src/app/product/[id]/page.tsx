@@ -1,3 +1,4 @@
+```javascript
 "use client";
 import Image from 'next/image';
 import { useEffect, useState } from "react";
@@ -31,35 +32,39 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       if (!id) return;
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-      if (error) {
+        if (error) {
+          console.error('Error fetching product:', error);
+          return;
+        }
+        setProduct(data);
+
+        // Fetch average rating
+        const { data: reviews, error: reviewsError } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('product_id', id);
+
+        if (reviewsError) {
+          console.error('Error fetching reviews:', reviewsError);
+          setAvgRating(null);
+          return;
+        }
+
+        if (reviews && reviews.length > 0) {
+          const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+          setAvgRating(total / reviews.length);
+        } else {
+          setAvgRating(null);
+        }
+      } catch (error) {
         console.error('Error fetching product:', error);
-        return;
-      }
-      setProduct(data);
-
-      // Fetch average rating
-      const { data: reviews, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('product_id', id);
-
-      if (reviewsError) {
-        console.error('Error fetching reviews:', reviewsError);
-        setAvgRating(null);
-        return;
-      }
-
-      if (reviews && reviews.length > 0) {
-        const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-        setAvgRating(total / reviews.length);
-      } else {
-        setAvgRating(null);
       }
     }
 
@@ -115,34 +120,34 @@ export default function ProductDetailPage() {
             {Array.isArray(product.images) && product.images.length > 0 ? (
               <Swiper spaceBetween={16} slidesPerView={1} className="rounded-lg shadow">
                 {product.images.map((img: string, idx: number) => (
-              <SwiperSlide key={idx}>
-                <Image
-                  src={img}
-                  alt={product.title + ' ' + (idx + 1)}
-                  className="w-full h-64 object-cover rounded-lg"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  placeholder="blur"
-                  blurDataURL="/placeholder.png"
-                />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          <Card shadow="sm">
-            <CardBody className="overflow-visible p-0">
-              <Image
-                src={product.image_url}
-                alt={product.title}
-                className="w-full h-64 object-cover rounded-lg shadow"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                placeholder="blur"
-                blurDataURL="/placeholder.png"
-              />
-            </CardBody>
-          </Card>
-        )}
+                  <SwiperSlide key={idx}>
+                    <Image
+                      src={img}
+                      alt={product.title + ' ' + (idx + 1)}
+                      className="w-full h-64 object-cover rounded-lg"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      placeholder="blur"
+                      blurDataURL="/placeholder.png"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+              <Card shadow="sm">
+                <CardBody className="overflow-visible p-0">
+                  <Image
+                    src={product.image_url}
+                    alt={product.title}
+                    className="w-full h-64 object-cover rounded-lg shadow"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    placeholder="blur"
+                    blurDataURL="/placeholder.png"
+                  />
+                </CardBody>
+              </Card>
+            )}
           </div>
 
           {/* Product Details */}
@@ -158,10 +163,10 @@ export default function ProductDetailPage() {
               )}
             </div>
             <div className="flex gap-4 product-action">
-            <AuthGuard>
-              <ChatButton listingId={Number(id)} />
-            </AuthGuard>
-            <NextUIButton
+              <AuthGuard>
+                <ChatButton listingId={Number(id)} />
+              </AuthGuard>
+              <NextUIButton
                 color="success"
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 as={motion.button}
@@ -214,3 +219,4 @@ export default function ProductDetailPage() {
     </>
   );
 }
+```

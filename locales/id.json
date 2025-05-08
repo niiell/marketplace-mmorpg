@@ -8,6 +8,13 @@
     "logout": "Keluar",
     "chatButton": "Obrolan",
     "dispute": "Sengketa",
-    "review": "Ulasan"
+    "review": "Ulasan",
+    "search": "Cari",
+    "settings": "Pengaturan"
+  },
+  "errors": {
+    "invalidEmail": "Email tidak valid",
+    "invalidPassword": "Kata sandi tidak valid",
+    "userNotFound": "Pengguna tidak ditemukan"
   }
 }

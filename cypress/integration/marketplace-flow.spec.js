@@ -1,43 +1,61 @@
 describe('Marketplace User Flow', () => {
+  const listingCardSelector = '[data-testid="listing-card"]';
+  const chatButtonSelector = '[data-testid="chat-button"]';
+  const chatInputSelector = '[data-testid="chat-input"]';
+  const chatMessageSelector = '[data-testid="chat-message"]';
+  const buyButtonSelector = '[data-testid="buy-button"]';
+  const checkoutFormSelector = '[data-testid="checkout-form"]';
+  const addressInputSelector = 'input[name="address"]';
+  const submitButtonSelector = 'button[type="submit"]';
+  const orderSuccessSelector = '[data-testid="order-success"]';
+  const reviewFormSelector = '[data-testid="review-form"]';
+  const reviewInputSelector = 'textarea[name="review"]';
+  const reviewListSelector = '[data-testid="review-list"]';
+  const disputeButtonSelector = '[data-testid="dispute-button"]';
+  const disputeFormSelector = '[data-testid="dispute-form"]';
+  const disputeReasonInputSelector = 'textarea[name="disputeReason"]';
+  const disputeConfirmationSelector = '[data-testid="dispute-confirmation"]';
+
   it('browse listing, chat, checkout, review, and dispute', () => {
     // Visit marketplace page
     cy.visit('/marketplace');
+
     // Click on first listing card
-    cy.get('[data-testid="listing-card"]').first().click();
+    cy.get(listingCardSelector).first().click();
 
     // Chat with seller
-    cy.get('[data-testid="chat-button"]').click();
-    cy.get('[data-testid="chat-input"]').type('Hello, I am interested in this item{enter}');
-    cy.get('[data-testid="chat-message"]').should('contain', 'Hello, I am interested in this item');
+    cy.get(chatButtonSelector).click();
+    cy.get(chatInputSelector).type('Hello, I am interested in this item{enter}');
+    cy.get(chatMessageSelector).should('contain', 'Hello, I am interested in this item');
 
     // Proceed to checkout
-    cy.get('[data-testid="buy-button"]').click();
+    cy.get(buyButtonSelector).click();
     cy.url().should('include', '/checkout');
 
     // Fill checkout form and submit
-    cy.get('[data-testid="checkout-form"]').within(() => {
-      cy.get('input[name="address"]').type('123 Test Street');
-      cy.get('button[type="submit"]').click();
+    cy.get(checkoutFormSelector).within(() => {
+      cy.get(addressInputSelector).type('123 Test Street');
+      cy.get(submitButtonSelector).click();
     });
 
     // Confirm order success
-    cy.get('[data-testid="order-success"]').should('be.visible');
+    cy.get(orderSuccessSelector).should('be.visible');
 
     // Leave a review
     cy.visit('/marketplace');
-    cy.get('[data-testid="listing-card"]').first().click();
-    cy.get('[data-testid="review-form"]').within(() => {
-      cy.get('textarea[name="review"]').type('Great product!');
-      cy.get('button[type="submit"]').click();
+    cy.get(listingCardSelector).first().click();
+    cy.get(reviewFormSelector).within(() => {
+      cy.get(reviewInputSelector).type('Great product!');
+      cy.get(submitButtonSelector).click();
     });
-    cy.get('[data-testid="review-list"]').should('contain', 'Great product!');
+    cy.get(reviewListSelector).should('contain', 'Great product!');
 
     // File a dispute
-    cy.get('[data-testid="dispute-button"]').click();
-    cy.get('[data-testid="dispute-form"]').within(() => {
-      cy.get('textarea[name="disputeReason"]').type('Item not as described');
-      cy.get('button[type="submit"]').click();
+    cy.get(disputeButtonSelector).click();
+    cy.get(disputeFormSelector).within(() => {
+      cy.get(disputeReasonInputSelector).type('Item not as described');
+      cy.get(submitButtonSelector).click();
     });
-    cy.get('[data-testid="dispute-confirmation"]').should('be.visible');
+    cy.get(disputeConfirmationSelector).should('be.visible');
   });
 });

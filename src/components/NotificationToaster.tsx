@@ -1,3 +1,4 @@
+```javascript
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -36,6 +37,12 @@ export default function NotificationToaster({ message, type, duration = 3000, on
     info: 'bg-blue-500'
   }[type];
 
+  const icon = {
+    success: 'fas fa-check-circle',
+    error: 'fas fa-exclamation-circle',
+    info: 'fas fa-info-circle'
+  }[type];
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -51,6 +58,7 @@ export default function NotificationToaster({ message, type, duration = 3000, on
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           onKeyDown={handleKeyDown}
         >
+          <i className={`fas ${icon} mr-2`} />
           <span>{message}</span>
           <button
             onClick={handleClose}
@@ -64,3 +72,4 @@ export default function NotificationToaster({ message, type, duration = 3000, on
     </AnimatePresence>
   );
 }
+```

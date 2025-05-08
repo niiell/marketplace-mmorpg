@@ -12,6 +12,8 @@ export default function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const currentLocale = locales.find((l) => l.code === pathname.split("/")[1])?.code || locales[0].code;
+
   const changeLocale = (locale: string) => {
     const segments = (pathname ?? "").split("/");
     if (locales.some((l) => l.code === segments[1])) {
@@ -26,7 +28,7 @@ export default function LanguageSwitcher() {
   return (
     <select
       onChange={(e) => changeLocale(e.target.value)}
-      defaultValue={locales[0].code}
+      value={currentLocale}
       className="border border-gray-300 rounded p-1"
     >
       {locales.map((locale) => (

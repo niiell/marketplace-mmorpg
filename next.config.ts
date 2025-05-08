@@ -1,4 +1,3 @@
-/** @type {import('next').NextConfig} */
 const path = require('path');
 
 const nextConfig = {
@@ -9,7 +8,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: process.env.NODE_ENV === 'development'
   },
-  // Removed i18n config because it is unsupported in App Router
+  experimental: {
+    appDir: true,
+  },
   headers: async () => {
     return [
       {
@@ -43,6 +44,9 @@ const nextConfig = {
       generated: path.resolve(__dirname, 'src/generated'),
     };
     return config;
+  },
+  images: {
+    domains: ['supabase.co', 'fonts.gstatic.com'],
   },
 };
 

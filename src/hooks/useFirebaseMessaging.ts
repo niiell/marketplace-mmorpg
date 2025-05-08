@@ -8,14 +8,14 @@ export function useFirebaseMessaging() {
   const [message, setMessage] = useState<any>(null);
 
   useEffect(() => {
-    async function requestPermission() {
+    const requestPermission = async () => {
       try {
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
           const msg = await messaging;
           if (msg) {
             const currentToken = await getToken(msg, {
-              vapidKey: "YOUR_PUBLIC_VAPID_KEY",
+              vapidKey: process.env.REACT_APP_PUBLIC_VAPID_KEY,
             });
             setToken(currentToken);
             onMessage(msg, (payload) => {
@@ -28,7 +28,7 @@ export function useFirebaseMessaging() {
       } catch (err) {
         setError(err as Error);
       }
-    }
+    };
     requestPermission();
   }, []);
 

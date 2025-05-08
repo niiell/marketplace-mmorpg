@@ -9,8 +9,11 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <pre style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.5rem', borderRadius: '0.25rem', maxWidth: 600, overflowX: 'auto' }}>
           {error?.stack || "No stacktrace"}
         </pre>
-        <form>
-          <button type="submit" onClick={() => reset()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: '#2563eb', color: 'white', borderRadius: '0.25rem' }}>Coba Lagi</button>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          reset();
+        }}>
+          <button type="submit" style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: '#2563eb', color: 'white', borderRadius: '0.25rem' }}>Coba Lagi</button>
         </form>
       </body>
     </html>

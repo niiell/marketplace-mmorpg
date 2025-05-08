@@ -8,8 +8,9 @@ describe('Marketplace Page', () => {
   });
 
   it('filters listings by category', () => {
-    cy.get('select#category').select('SomeCategory');
-    cy.url().should('include', 'category=SomeCategory');
+    const category = 'SomeCategory';
+    cy.get('select#category').select(category);
+    cy.url().should('include', `category=${category}`);
     cy.get('.listing-card').should('exist');
   });
 
@@ -18,7 +19,16 @@ describe('Marketplace Page', () => {
   });
 
   it('shows no listings message when no data', () => {
-    cy.get('select#category').select('NonExistentCategory');
+    const nonExistentCategory = 'NonExistentCategory';
+    cy.get('select#category').select(nonExistentCategory);
     cy.contains('No listings found.').should('be.visible');
+  });
+
+  it('handles error when API call fails', () => {
+    cy.intercept('GET', '/api/listings', {
+      statusCode: 500,
+    });
+    cy.visit('/marketplace');
+    cy.contains('Error loading listings.').should('be.visible');
   });
 });

@@ -1,6 +1,8 @@
 {
   "baseUrl": "http://localhost:3000",
   "video": false,
-  "viewportWidth": 1280,
-  "viewportHeight": 800
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  }
 }

@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 
 interface Dispute {
@@ -13,7 +11,16 @@ interface Dispute {
   updated_at: string;
 }
 
-export default function DisputesPage() {
+interface DisputeResponse {
+  disputes: Dispute[];
+}
+
+const DISPUTE_STATUSES = {
+  RESOLVED: 'resolved',
+  REFUNDED: 'refunded',
+};
+
+const DisputesPage = () => {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,13 +31,11 @@ export default function DisputesPage() {
     try {
       const res = await fetch('/api/admin/disputes');
       if (!res.ok) {
-        setError('Failed to fetch disputes');
-        setLoading(false);
-        return;
+        throw new Error('Failed to fetch disputes');
       }
-      const data = await res.json();
+      const data: DisputeResponse = await res.json();
       setDisputes(data.disputes);
-    } catch {
+    } catch (error) {
       setError('Failed to fetch disputes');
     } finally {
       setLoading(false);
@@ -49,11 +54,10 @@ export default function DisputesPage() {
         body: JSON.stringify({ id, status }),
       });
       if (!res.ok) {
-        alert('Failed to update status');
-        return;
+        throw new Error('Failed to update status');
       }
       fetchDisputes();
-    } catch {
+    } catch (error) {
       alert('Failed to update status');
     }
   };
@@ -96,13 +100,13 @@ export default function DisputesPage() {
                 <td className="border border-gray-300 p-2">{dispute.status}</td>
                 <td className="border border-gray-300 p-2 space-x-2">
                   <button
-                    onClick={() => updateStatus(dispute.id, 'resolved')}
+                    onClick={() => updateStatus(dispute.id, DISPUTE_STATUSES.RESOLVED)}
                     className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
                   >
                     Resolve
                   </button>
                   <button
-                    onClick={() => updateStatus(dispute.id, 'refunded')}
+                    onClick={() => updateStatus(dispute.id, DISPUTE_STATUSES.REFUNDED)}
                     className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
                   >
                     Refund
@@ -115,4 +119,6 @@ export default function DisputesPage() {
       )}
     </div>
   );
-}
+};
+
+export default DisputesPage;

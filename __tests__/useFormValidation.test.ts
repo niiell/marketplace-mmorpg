@@ -13,18 +13,20 @@ const validationRules = {
 };
 
 describe('useFormValidation', () => {
-  test('initializes with initial values and no errors', () => {
-    const { result } = renderHook(() =>
-      useFormValidation({ initialValues: { username: '', email: '' }, validationRules })
+  const setupHook = (initialValues) => {
+    return renderHook(() =>
+      useFormValidation({ initialValues, validationRules })
     );
+  };
+
+  test('initializes with initial values and no errors', () => {
+    const { result } = setupHook({ username: '', email: '' });
     expect(result.current.values).toEqual({ username: '', email: '' });
     expect(result.current.errors).toEqual({ username: 'Username is required', email: 'Email is required' });
   });
 
   test('updates values and validates fields', () => {
-    const { result } = renderHook(() =>
-      useFormValidation({ initialValues: { username: '', email: '' }, validationRules })
-    );
+    const { result } = setupHook({ username: '', email: '' });
 
     act(() => {
       result.current.handleChange('username', 'ab');
@@ -46,5 +48,16 @@ describe('useFormValidation', () => {
       result.current.handleChange('email', 'test@example.com');
     });
     expect(result.current.errors.email).toBeNull();
+  });
+
+  test('handles multiple field updates', () => {
+    const { result } = setupHook({ username: '', email: '' });
+
+    act(() => {
+      result.current.handleChange('username', 'abc');
+      result.current.handleChange('email', 'test@example.com');
+    });
+    expect(result.current.values).toEqual({ username: 'abc', email: 'test@example.com' });
+    expect(result.current.errors).toEqual({ username: null, email: null });
   });
 });

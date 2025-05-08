@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
   content: [
@@ -11,7 +10,7 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#2563eb', // biru utama
+          DEFAULT: '#2563eb', 
           dark: '#1e40af',
           light: '#60a5fa',
         },
@@ -135,4 +134,3 @@ module.exports = {
     },
   ],
 };
-</create_file>
