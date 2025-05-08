@@ -2,6 +2,7 @@
 
 import { IntlProvider } from "next-intl";
 import { useFirebaseMessaging } from "../hooks/useFirebaseMessaging";
+import { AuthProvider } from "../context/AuthContext";
 
 export function Providers({
   children,
@@ -15,8 +16,10 @@ export function Providers({
   useFirebaseMessaging();
 
   return (
-    <IntlProvider locale={locale} messages={messages}>
-      {children}
-    </IntlProvider>
+    <AuthProvider>
+      <IntlProvider locale={locale} messages={messages}>
+        {children}
+      </IntlProvider>
+    </AuthProvider>
   );
 }

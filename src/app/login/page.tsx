@@ -1,10 +1,12 @@
 "use client";
+export const dynamic = 'force-dynamic';
+
+import React, { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { supabase } from '../../lib/supabase';
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const schema = z.object({
@@ -14,30 +16,49 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectedFrom = searchParams.get("redirectedFrom");
 
   const onSubmit = async (data: FormData) => {
+    console.log("Login form submitted with data:", data);
     setError("");
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      console.log("Supabase signInWithPassword response:", signInData, error);
+      if (error) {
+        console.error("Supabase login error:", error);
+        setError(error.message || "Login gagal. Periksa email dan password Anda.");
+        return;
+      }
+      const user = signInData.user;
+      console.log("User after signIn:", user);
+      // Remove email verification blocking check
+      // Refresh session to update auth state
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log("Session after getSession:", sessionData, sessionError);
+      if (sessionError) {
+        setError("Gagal mendapatkan sesi pengguna.");
+        return;
+      }
+      if (!sessionData.session) {
+        setError("Login gagal, sesi tidak ditemukan.");
+        return;
+      }
+      // Reload the page to ensure AuthContext updates user state
+      window.location.href = redirectedFrom || "/dashboard";
+    } catch (err) {
+      console.error("Error during login:", err);
+      setError("Terjadi kesalahan saat login. Silakan coba lagi.");
     }
-    // Cek verifikasi email
-    const user = signInData.user;
-    if (user?.confirmation_sent_at && !user?.confirmed_at) {
-      setError("Email Anda belum diverifikasi. Silakan cek email Anda untuk verifikasi.");
-      return;
-    }
-    router.replace("/dashboard");
   };
 
   return (
@@ -63,5 +84,13 @@ export default function LoginPage() {
       </form>
       <p className="mt-4 text-center text-sm">Belum punya akun? <Link href="/register" className="text-blue-600 hover:underline">Daftar</Link></p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

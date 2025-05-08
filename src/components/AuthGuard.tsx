@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
+import { ReactNode } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -10,27 +10,23 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const pathname = usePathname();
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setAuthenticated(true);
-      } else {
-        router.replace("/login");
-      }
-      setLoading(false);
-    });
-  }, [router]);
+  console.debug("[AuthGuard] loading:", loading, "user:", user, "pathname:", pathname);
 
   if (loading) {
+    console.debug("[AuthGuard] Loading state, rendering loading indicator");
     return <div>Loading...</div>;
   }
 
-  if (!authenticated) {
+  if (!user) {
+    const redirectUrl = `/login?redirectedFrom=${encodeURIComponent(pathname)}`;
+    console.debug("[AuthGuard] No user, redirecting to:", redirectUrl);
+    router.replace(redirectUrl);
     return null;
   }
 
+  console.debug("[AuthGuard] User authenticated, rendering children");
   return <>{children}</>;
 }

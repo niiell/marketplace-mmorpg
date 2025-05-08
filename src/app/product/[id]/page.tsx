@@ -8,6 +8,7 @@ import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/
 import ChatButton from '../../../components/ChatButton';
 import ReviewForm from '../../../components/ReviewForm';
 import AuthGuard from '../../../components/AuthGuard';
+import WishlistButton from '../../../components/WishlistButton';
 import DisputeForm from '../../../components/DisputeForm';
 import { NextSeo } from 'next-seo';
 import dynamic from 'next/dynamic';
@@ -160,7 +161,7 @@ export default function ProductDetailPage() {
             <AuthGuard>
               <ChatButton listingId={Number(id)} />
             </AuthGuard>
-              <NextUIButton
+            <NextUIButton
                 color="success"
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 as={motion.button}
@@ -169,6 +170,9 @@ export default function ProductDetailPage() {
               >
                 Beli Sekarang
               </NextUIButton>
+              <AuthGuard>
+                <WishlistButton listingId={Number(id)} />
+              </AuthGuard>
             </div>
           </div>
         </div>
