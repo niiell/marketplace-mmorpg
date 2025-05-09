@@ -1,4 +1,3 @@
-```javascript
 export default function Features() {
   const features = [
     {
@@ -37,4 +36,3 @@ export default function Features() {
     </section>
   );
 }
-```

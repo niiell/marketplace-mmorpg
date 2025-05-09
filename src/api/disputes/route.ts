@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ dispute: data }, { status: 201 });
   } catch (err) {
-    console.error(err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

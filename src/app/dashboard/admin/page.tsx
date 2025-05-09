@@ -1,4 +1,3 @@
-```javascript
 "use client";
 
 import { useState } from "react";
@@ -111,4 +110,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-```

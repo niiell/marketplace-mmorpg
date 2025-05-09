@@ -1,8 +1,8 @@
-```typescript
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { formatCurrency } from "../utils/formatCurrency";
+import { logger } from "../utils/logger";
 
 interface CurrencyContextType {
   currency: string;
@@ -40,7 +40,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const data = await response.json();
         setConversionRates(data.rates);
       } catch (error) {
-        console.error("Failed to fetch conversion rates:", error);
+        logger.error("Failed to fetch conversion rates:", error);
       }
     };
 
@@ -71,4 +71,3 @@ export const useCurrency = (): CurrencyContextType => {
   }
   return context;
 };
-```

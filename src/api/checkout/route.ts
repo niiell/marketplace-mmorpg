@@ -32,13 +32,16 @@ export async function POST(req: NextRequest) {
     // Fetch buyer email from Supabase Auth
     const { data: userList, error: userError } = await supabase.auth.admin.listUsers({
       page: 1,
-      perPage: 1,
-      filter: `id=eq.${buyer_id}`,
+      perPage: 100,
     });
-    if (userError || !userList?.users?.[0]) {
+    if (userError || !userList?.users) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    const payer_email = userList.users[0].email;
+    const user = userList.users.find((u) => u.id === buyer_id);
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    const payer_email = user.email;
 
     // Call Xendit API to create invoice
     const xenditRes = await fetch('https://api.xendit.co/v2/invoices', {

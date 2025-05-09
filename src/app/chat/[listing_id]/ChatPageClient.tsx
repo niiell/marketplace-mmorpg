@@ -1,4 +1,3 @@
-```javascript
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
@@ -31,7 +30,7 @@ const fetcher = async (listing_id: string) => {
 
     return { chat, messages: messages || [] };
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return { chat: null, messages: [] };
   }
 };
@@ -114,7 +113,7 @@ export default function ChatPage() {
         }
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     } finally {
       setSending(false);
     }
@@ -156,4 +155,3 @@ export default function ChatPage() {
     </div>
   );
 }
-```

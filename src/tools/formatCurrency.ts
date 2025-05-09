@@ -1,5 +1,5 @@
 export function formatCurrency(amount: number, locale: string, currency: string): string {
-  const options = {
+  const options: Intl.NumberFormatOptions = {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,

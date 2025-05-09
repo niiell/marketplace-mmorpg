@@ -10,7 +10,7 @@ interface WishlistButtonProps {
 export default function WishlistButton({ listingId }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWishlistStatus = async () => {
@@ -30,7 +30,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
         if (json.wishlist) {
           setIsWishlisted(json.wishlist.some((item: any) => item.listing_id === listingId));
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
         setError(error.message);
       } finally {
@@ -67,7 +67,7 @@ export default function WishlistButton({ listingId }: WishlistButtonProps) {
         });
         setIsWishlisted(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setError(error.message);
     } finally {

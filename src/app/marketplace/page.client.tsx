@@ -23,7 +23,7 @@ export default function MarketplacePage() {
   }, [searchParams]);
 
   useEffect(() => {
-    const uniqueCategories = [...new Set(allListings.map((l) => l.category))];
+    const uniqueCategories = [...new Set(allListings.map((l) => l.category).filter((c): c is string => c !== undefined))];
     setCategories(uniqueCategories);
   }, []);
 

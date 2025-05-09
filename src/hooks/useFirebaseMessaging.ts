@@ -12,16 +12,16 @@ export function useFirebaseMessaging() {
       try {
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
-          const msg = await messaging;
-          if (msg) {
-            const currentToken = await getToken(msg, {
-              vapidKey: process.env.REACT_APP_PUBLIC_VAPID_KEY,
-            });
-            setToken(currentToken);
-            onMessage(msg, (payload) => {
-              setMessage(payload);
-            });
-          }
+        const msg = await messaging();
+        if (msg) {
+          const currentToken = await getToken(msg, {
+            vapidKey: process.env.REACT_APP_PUBLIC_VAPID_KEY || "",
+          });
+          setToken(currentToken);
+          onMessage(msg, (payload) => {
+            setMessage(payload);
+          });
+        }
         } else {
           setError(new Error("Notification permission denied"));
         }

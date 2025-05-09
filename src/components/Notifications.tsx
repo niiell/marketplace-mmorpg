@@ -11,7 +11,7 @@ interface Notification {
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -33,7 +33,7 @@ export default function Notifications() {
       } else {
         setNotifications(data || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -50,7 +50,7 @@ export default function Notifications() {
       setNotifications(notifications.map(n =>
         n.id === id ? { ...n, is_read: true } : n
       ));
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     }
   };

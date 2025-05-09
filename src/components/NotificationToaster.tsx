@@ -1,4 +1,3 @@
-```javascript
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -72,4 +71,3 @@ export default function NotificationToaster({ message, type, duration = 3000, on
     </AnimatePresence>
   );
 }
-```

@@ -17,7 +17,7 @@ export function Providers({
 
   return (
     <AuthProvider>
-      <IntlProvider locale={locale} messages={messages} defaultLocale="en">
+      <IntlProvider locale={locale} messages={messages}>
         {children}
       </IntlProvider>
     </AuthProvider>

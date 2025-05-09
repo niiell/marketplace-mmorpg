@@ -1,9 +1,9 @@
-```javascript
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { useCurrency } from "../../../context/CurrencyContext";
+import { logger } from "../../../utils/logger";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -80,12 +80,12 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
           alert("Gagal membuat payment link");
         }
       } catch (error) {
-        console.error(error);
+        logger.error(error);
         alert("Terjadi kesalahan");
       }
     };
     startCheckout();
-  }, [listingId, currency]);
+  }, [listingId, currency, convert, router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -93,4 +93,3 @@ export default function CheckoutClient({ listingId }: CheckoutClientProps) {
     </div>
   );
 }
-```

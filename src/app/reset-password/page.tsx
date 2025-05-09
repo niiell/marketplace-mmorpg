@@ -37,7 +37,11 @@ export default function ResetPasswordPage() {
         setResetComplete(true);
       }
     } catch (error) {
-      setError(error.message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Terjadi kesalahan yang tidak diketahui');
+      }
     } finally {
       setIsSubmitting(false);
     }

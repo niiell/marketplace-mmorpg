@@ -7,7 +7,7 @@ async function sendRegistrationEmail(email: string, username: string) {
     console.log(`Sending registration email to ${email} for user ${username}`);
     return true;
   } catch (error: any) {
-    console.error(`Error sending registration email: ${error.message}`);
+    // console.error(`Error sending registration email: ${error.message}`);
     return false;
   }
 }

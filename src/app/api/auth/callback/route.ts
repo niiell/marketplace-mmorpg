@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     // Set user session
-    const session = await supabase.auth.createSession(user);
+    const session = data.session;
     if (!session) {
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
     }

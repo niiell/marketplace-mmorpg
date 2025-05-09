@@ -7,6 +7,7 @@ interface AuthContextType {
   user: any | null;
   session: any | null;
   loading: boolean;
+  error: Error | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  error: null,
   signIn: async () => {},
   signOut: async () => {},
 });
@@ -23,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -31,12 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       if (error) {
+        setError(error);
         throw error;
       }
       setSession(data.session);
       setUser(data.session?.user ?? null);
-    } catch (error) {
+      setError(null);
+    } catch (error: any) {
       console.error("[AuthContext] Sign in error:", error);
+      setError(error);
     }
   };
 
@@ -44,12 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
+        setError(error);
         throw error;
       }
       setSession(null);
       setUser(null);
-    } catch (error) {
+      setError(null);
+    } catch (error: any) {
       console.error("[AuthContext] Sign out error:", error);
+      setError(error);
     }
   };
 
@@ -60,6 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       setLoading(false);
+      setError(null);
+    }).catch((error) => {
+      setError(error);
+      setLoading(false);
     });
 
     // Listen for auth state changes
@@ -69,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      setError(null);
     });
 
     return () => {
@@ -77,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, error, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

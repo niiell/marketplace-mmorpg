@@ -7,46 +7,38 @@ const supabase = createClient(
 );
 
 const getDisputes = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('disputes')
-      .select('*')
-      .order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('disputes')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (err) {
-    throw err;
+  if (error) {
+    throw error;
   }
+
+  return data;
 };
 
-const updateDispute = async (id, status) => {
-  try {
-    const { data, error } = await supabase
-      .from('disputes')
-      .update({ status })
-      .eq('id', id)
-      .select()
-      .single();
+const updateDispute = async (id: string, status: string) => {
+  const { data, error } = await supabase
+    .from('disputes')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
 
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (err) {
-    throw err;
+  if (error) {
+    throw error;
   }
+
+  return data;
 };
 
 export async function GET(req: NextRequest) {
   try {
     const disputes = await getDisputes();
     return NextResponse.json({ disputes });
-  } catch (err) {
+  } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -62,7 +54,7 @@ export async function PATCH(req: NextRequest) {
 
     const dispute = await updateDispute(id, status);
     return NextResponse.json({ dispute });
-  } catch (err) {
+  } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -11,12 +11,12 @@ const navItems = [
 ];
 
 export default function NavbarRadix() {
-  const [dark, setDark] = useState(() => {
-    const storedTheme = localStorage.getItem("theme");
-    return storedTheme === "dark" || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  });
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setDark(storedTheme === "dark" || prefersDark);
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 

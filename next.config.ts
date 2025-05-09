@@ -1,4 +1,5 @@
-const path = require('path');
+import path from 'path';
+import type { Configuration } from 'webpack';
 
 const nextConfig = {
   reactStrictMode: true,
@@ -9,7 +10,7 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === 'development'
   },
   experimental: {
-    appDir: true,
+    // appDir: true,
   },
   headers: async () => {
     return [
@@ -36,7 +37,8 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config) => {
+  webpack: (config: Configuration) => {
+    config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
       components: path.resolve(__dirname, 'src/components'),

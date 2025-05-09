@@ -13,11 +13,11 @@ export async function POST(request: Request) {
     }
 
     // Save data to database or file system
-    console.log("Received food item:", data);
+    // console.log("Received food item:", data);
 
     return NextResponse.json({ message: "Food item received" }, { status: 201 });
   } catch (error) {
-    console.error("Error handling request:", error);
+    // console.error("Error handling request:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -28,8 +28,8 @@ interface Profile {
 }
 
 interface User {
-  id: number;
-  email: string;
+  id: string;
+  email?: string;
 }
 
 export default function DashboardPage() {

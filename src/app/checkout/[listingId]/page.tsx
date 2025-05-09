@@ -5,7 +5,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ listi
     const resolvedParams = await params;
     return <CheckoutWrapper listingId={resolvedParams.listingId} />;
   } catch (error) {
-    console.error("Error resolving params:", error);
+    // console.error("Error resolving params:", error);
     return <div>Error resolving params</div>;
   }
 }

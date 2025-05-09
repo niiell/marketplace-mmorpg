@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const { data: buyer } = await supabase.from('profiles').select('email').eq('user_id', trx.buyer_id).single();
     const { data: seller } = await supabase.from('profiles').select('email').eq('user_id', trx.seller_id).single();
 
-    const sendEmail = async (email, subject, message) => {
+    const sendEmail = async (email: string, subject: string, message: string) => {
       await fetch('http://localhost:3000/api/notifications/send-transaction-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

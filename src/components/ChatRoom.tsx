@@ -1,10 +1,9 @@
-```typescript
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { List, AutoSizer } from 'react-virtualized';
 import SkeletonLoader from './SkeletonLoader';
 import '../styles/smoke-effect.css';
-import { useReducedMotion, motion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 
 interface Message {
   id: number;
@@ -205,4 +204,5 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
     </div>
   );
 };
-```
+
+export default ChatRoom;

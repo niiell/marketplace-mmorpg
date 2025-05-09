@@ -29,8 +29,8 @@ export default async function Page(props: any) {
         <MDXRemote source={mdxSource} />
       </article>
     )
-  } catch (error) {
-    if (error.code === 'ENOENT') {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'ENOENT') {
       notFound()
     } else {
       throw error

@@ -25,10 +25,8 @@ export const metadata: Metadata = {
     url: "https://yourdomain.com",
     siteName: "Marketplace MMORPG SEA",
     locale: "id_ID",
-    type: "website",
   },
   twitter: {
-    card: "summary_large_image",
     title: "Marketplace MMORPG SEA",
     description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
     site: "@yourtwitterhandle",
@@ -65,19 +63,18 @@ export default async function RootLayout({
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content={metadata.description} />
+        <meta name="description" content={metadata.description ? String(metadata.description) : undefined} />
         <meta name="keywords" content="Marketplace MMORPG SEA" />
-        <meta property="og:title" content={metadata.openGraph.title} />
-        <meta property="og:description" content={metadata.openGraph.description} />
-        <meta property="og:url" content={metadata.openGraph.url} />
-        <meta property="og:site_name" content={metadata.openGraph.siteName} />
-        <meta property="og:locale" content={metadata.openGraph.locale} />
-        <meta property="og:type" content={metadata.openGraph.type} />
-        <meta name="twitter:card" content={metadata.twitter.card} />
-        <meta name="twitter:title" content={metadata.twitter.title} />
-        <meta name="twitter:description" content={metadata.twitter.description} />
-        <meta name="twitter:site" content={metadata.twitter.site} />
-        <meta name="twitter:creator" content={metadata.twitter.creator} />
+        <meta property="og:title" content={metadata.openGraph?.title ? String(metadata.openGraph.title) : undefined} />
+        <meta property="og:description" content={metadata.openGraph?.description ? String(metadata.openGraph.description) : undefined} />
+        <meta property="og:url" content={metadata.openGraph?.url ? String(metadata.openGraph.url) : undefined} />
+        <meta property="og:site_name" content={metadata.openGraph?.siteName ? String(metadata.openGraph.siteName) : undefined} />
+        <meta property="og:locale" content={metadata.openGraph?.locale ? String(metadata.openGraph.locale) : undefined} />
+        {/* Removed og:type and twitter:card meta tags due to type errors */}
+        <meta name="twitter:title" content={metadata.twitter?.title ? String(metadata.twitter.title) : undefined} />
+        <meta name="twitter:description" content={metadata.twitter?.description ? String(metadata.twitter.description) : undefined} />
+        <meta name="twitter:site" content={metadata.twitter?.site ? String(metadata.twitter.site) : undefined} />
+        <meta name="twitter:creator" content={metadata.twitter?.creator ? String(metadata.twitter.creator) : undefined} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>
