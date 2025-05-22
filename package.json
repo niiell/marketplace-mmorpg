@@ -15,6 +15,7 @@
     "lighthouse:a11y": "lighthouse http://localhost:3000 --only-categories=accessibility --output=json --output-path=./lighthouse-a11y-report.json"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@nextui-org/react": "^2.6.11",
     "@radix-ui/react-toggle": "^1.1.6",

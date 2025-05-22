@@ -94,24 +94,13 @@ export default function ProductDetailPage() {
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Breadcrumbs */}
-        <nav className="text-sm mb-4" aria-label="Breadcrumb">
-          <ol className="list-reset flex text-gray-600 dark:text-gray-400">
-            <li>
-              <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</Link>
-              <span className="mx-2">/</span>
-            </li>
-            <li>
-              <Link href={`/category/${product.category?.id || ''}`} className="hover:text-blue-600 dark:hover:text-blue-400">
-                {product.category?.name || 'Kategori'}
-              </Link>
-              <span className="mx-2">/</span>
-            </li>
-            <li className="text-gray-900 dark:text-gray-100 font-semibold" aria-current="page">
-              {product.title}
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { href: '/', label: 'Home' },
+            { href: `/category/${product.category?.id || ''}`, label: product.category?.name || 'Kategori' },
+            { href: '#', label: product.title, current: true },
+          ]}
+        />
         <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Image Gallery */}
@@ -191,6 +180,7 @@ export default function ProductDetailPage() {
             Tulis Ulasan
           </button>
           <AuthGuard>
+            {/* Render ReviewForm inline below the "Tulis Ulasan" button to avoid empty area */}
             <ReviewForm listingId={id as string} onReviewSubmitted={() => setIsReviewModalOpen(false)} />
           </AuthGuard>
         </div>
