@@ -28,32 +28,6 @@ export function SmokeButton({
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([]);
   const [isHovered, setIsHovered] = useState(false);
 
-  const createParticles = useCallback((x: number, y: number) => {
-    const particleCount = 8;
-    const newParticles = Array.from({ length: particleCount }).map((_, index) => ({
-      id: Date.now() + index,
-      x,
-      y,
-    }));
-    setParticles((prev) => [...prev, ...newParticles]);
-    setTimeout(() => {
-      setParticles((prev) => prev.filter((p) => !newParticles.find((np) => np.id === p.id)));
-    }, 1000);
-  }, []);
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (!disabled) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        createParticles(x, y);
-        onClick?.();
-      }
-    },
-    [disabled, onClick, createParticles]
-  );
-
   const variantClasses = {
     primary: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700",
     secondary: "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800",
@@ -68,16 +42,39 @@ export function SmokeButton({
     lg: "px-6 py-3 text-lg",
   };
 
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const particleCount = 8;
+        const newParticles = Array.from({ length: particleCount }).map((_, index) => ({
+          id: Date.now() + index,
+          x,
+          y,
+        }));
+        setParticles((prev) => [...prev, ...newParticles]);
+        setTimeout(() => {
+          setParticles((prev) =>
+            prev.filter((p) => !newParticles.find((np) => np.id === p.id))
+          );
+        }, 1000);
+        onClick?.();
+      }
+    },
+    [disabled, onClick]
+  );
+
   return (
     <motion.button
       onClick={handleClick}
       disabled={disabled}
       className={`
         relative overflow-hidden rounded-lg font-semibold transition-all duration-200
-        ${variantClasses[variant]}
+        ${variantClasses[disabled ? "disabled" : variant]}
         ${sizeClasses[size]}
         ${fullWidth ? "w-full" : ""}
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         ${className}
       `}
       onMouseEnter={() => setIsHovered(true)}

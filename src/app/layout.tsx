@@ -73,20 +73,6 @@ export default async function RootLayout({
         <meta name="twitter:description" content={metadata.twitter?.description ? String(metadata.twitter.description) : undefined} />
         <meta name="twitter:site" content={metadata.twitter?.site ? String(metadata.twitter.site) : undefined} />
         <meta name="twitter:creator" content={metadata.twitter?.creator ? String(metadata.twitter.creator) : undefined} />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function getTheme() {
-                  const savedTheme = localStorage.getItem('theme');
-                  if (savedTheme) return savedTheme;
-                  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                document.documentElement.classList.toggle('dark', getTheme() === 'dark');
-              })();
-            `,
-          }}
-        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>

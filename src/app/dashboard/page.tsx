@@ -1,75 +1,86 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-import Link from "next/link";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 import { SmokeButton } from "../../components/SmokeButton";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import ListingCard from "../../components/ListingCard";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-interface Listing {
+interface ListingData {
   id: number;
   title: string;
   price: number;
-  seller_id: number;
-}
-
-interface Order {
-  id: number;
-  status_order: string;
-  buyer_id: number;
-  seller_id: number;
-}
-
-interface Profile {
-  id: number;
-  username: string;
-  bio: string;
-  user_id: number;
-}
-
-interface User {
-  id: string;
-  email?: string;
+  image_url: string | null;
+  category: string | null;
+  rarity: string | null;
+  level: number | null;
+  status: string;
+  seller_id: string;
+  profiles: {
+    username: string | null;
+    seller_rating: number | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 export default function DashboardPage() {
-  const [tab, setTab] = useState<'listings' | 'orders' | 'profile'>('listings');
-  const [user, setUser] = useState<User | null>(null);
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { user } = useAuth();
+  const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      setUser(user);
-      const [{ data: listings }, { data: orders }, { data: profile }] = await Promise.all([
-        supabase.from('listings').select('*').eq('seller_id', user.id),
-        supabase.from('transactions').select('*').or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`),
-        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
-      ]);
-      setListings(listings || []);
-      setOrders(orders || []);
-      setProfile(profile || null);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+    if (user) {
+      fetchListings();
+    }
+  }, [user]);
 
-  if (loading) return <div className="text-center py-12">Loading...</div>;
+  async function fetchListings() {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles (
+            username,
+            seller_rating,
+            avatar_url
+          )
+        `)
+        .eq('seller_id', user?.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedListings = (data as ListingData[]).map(listing => ({
+        id: listing.id.toString(),
+        title: listing.title,
+        price: listing.price,
+        image: listing.image_url || '/placeholder-image.jpg',
+        category: listing.category || 'Uncategorized',
+        rarity: listing.rarity || 'Common',
+        level: listing.level || 1,
+        seller: {
+          name: listing.profiles?.username || 'Unknown Seller',
+          rating: listing.profiles?.seller_rating || 0,
+          avatarUrl: listing.profiles?.avatar_url || undefined
+        }
+      }));
+
+      setListings(formattedListings);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <Link href="/listing/new">
           <SmokeButton variant="primary" className="flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -81,15 +92,15 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-64" />
+          ))}
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Active Listings Section */}
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Listing Aktif</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Listing Aktif</h2>
             {listings.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing) => (
@@ -99,47 +110,18 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="mb-2 border-b pb-2">{listing.title} - Rp {listing.price}</div>
+                    <ListingCard {...listing} />
                   </motion.div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600 dark:text-gray-400 mb-4">Anda belum memiliki listing aktif</p>
-                <Link href="/listing/new">
-                  <SmokeButton variant="primary">Buat Listing Baru</SmokeButton>
-                </Link>
+                <p className="text-gray-600">
+                  Anda belum memiliki listing aktif. Klik tombol "Jual Barang" di atas untuk mulai berjualan.
+                </p>
               </div>
             )}
           </section>
-
-          {/* Recent Transactions Section */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Transaksi Terbaru</h2>
-            {orders.length > 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <ul>
-                  {orders.map((order: Order) => (
-                    <li key={order.id} className="mb-2 border-b pb-2">Order #{order.id} - Status: {order.status_order}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="text-center py-8 text-gray-600 dark:text-gray-400">
-                Belum ada transaksi
-              </p>
-            )}
-          </section>
-
-          {/* Profile Section */}
-          {tab === 'profile' && profile && (
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">Profile</h2>
-              <div>Email: {user?.email}</div>
-              <div>Username: {profile.username}</div>
-              <div>Bio: {profile.bio}</div>
-            </section>
-          )}
         </div>
       )}
     </div>

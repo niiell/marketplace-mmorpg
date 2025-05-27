@@ -65,9 +65,9 @@ export default function ListingCard({
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       whileHover={{ y: -5 }}
-      className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden
-        border border-gray-200 dark:border-gray-700 transition-all duration-300
-        hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-500"
+      className="group relative bg-white rounded-xl shadow-lg overflow-hidden
+        border border-gray-200 transition-all duration-300
+        hover:shadow-xl hover:border-blue-300"
     >
       <Link href={`/listing/${id}`} className="block">
         {/* Image container */}
@@ -81,7 +81,7 @@ export default function ListingCard({
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Category badge */}
-          <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium bg-white/90 dark:bg-gray-800/90 rounded-full">
+          <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium bg-white/90 rounded-full">
             {category}
           </div>
 
@@ -97,7 +97,7 @@ export default function ListingCard({
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
             {title}
           </h3>
 
@@ -111,7 +111,7 @@ export default function ListingCard({
                   className="object-cover"
                 />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="text-sm text-gray-600">
                 {seller.name}
               </span>
             </div>
@@ -123,7 +123,7 @@ export default function ListingCard({
                   className={`w-4 h-4 ${
                     i < seller.rating
                       ? "text-yellow-400"
-                      : "text-gray-300 dark:text-gray-600"
+                      : "text-gray-300"
                   }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -137,10 +137,10 @@ export default function ListingCard({
           {/* Price and Level */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-xl font-bold text-blue-600">
                 {formatCurrency(price)}
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-gray-500">
                 Level {level}
               </span>
             </div>
@@ -154,7 +154,7 @@ export default function ListingCard({
       </div>
 
       {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-blue-600/5 dark:bg-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </motion.div>
   );
 }
