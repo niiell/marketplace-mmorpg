@@ -7,6 +7,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key="client-layout"
+        className="transition-colors duration-200"
         transition={{ duration: 0.3, ease: "easeInOut" }}
         variants={{
           hidden: { opacity: 0, y: 10 },

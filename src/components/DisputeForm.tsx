@@ -1,170 +1,244 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../src/lib/supabase';
-import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+"use client";
+
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SmokeButton } from "./SmokeButton";
 
 interface DisputeFormProps {
-  listingId: string;
-  onDisputeSubmitted: () => void;
+  transactionId: string;
+  onSubmit: (data: FormData) => Promise<void>;
 }
 
-export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFormProps) {
-  const [reason, setReason] = useState('');
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+export default function DisputeForm({ transactionId, onSubmit }: DisputeFormProps) {
+  const [reason, setReason] = useState("");
+  const [description, setDescription] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [reasonValid, setReasonValid] = useState(true);
-  const [evidenceValid, setEvidenceValid] = useState(true);
-
-  useEffect(() => {
-    setReasonValid(reason.length >= 10 && reason.length <= 1000);
-  }, [reason]);
-
-  useEffect(() => {
-    setEvidenceValid(evidenceFile !== null);
-  }, [evidenceFile]);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setEvidenceFile(e.target.files[0]);
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles((prev) => [...prev, ...newFiles]);
     }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reasonValid || !evidenceValid) {
-      toast.error('Mohon perbaiki input yang salah');
-      return;
-    }
+    setError(null);
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Silakan login terlebih dahulu');
-        setIsSubmitting(false);
-        return;
+      if (!reason) {
+        throw new Error("Please select a reason for the dispute");
       }
 
-      let evidenceUrl: string | null = null;
-      if (evidenceFile) {
-        const fileExt = evidenceFile.name.split('.').pop();
-        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-        const { data, error: uploadError } = await supabase.storage
-          .from('dispute-evidence')
-          .upload(fileName, evidenceFile);
+      const formData = new FormData();
+      formData.append("transactionId", transactionId);
+      formData.append("reason", reason);
+      formData.append("description", description);
+      files.forEach((file) => formData.append("evidence[]", file));
 
-        if (uploadError) throw uploadError;
-
-        evidenceUrl = data?.path ?? null;
-      }
-
-      const { error } = await supabase
-        .from('disputes')
-        .insert({
-          listing_id: listingId,
-          user_id: user.id,
-          reason,
-          evidence_url: evidenceUrl,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
-
-      toast.success('Dispute berhasil diajukan');
-      setReason('');
-      setEvidenceFile(null);
-      onDisputeSubmitted();
-    } catch (error: any) {
-      toast.error(error.message);
+      await onSubmit(formData);
+      setSuccess(true);
+      setReason("");
+      setDescription("");
+      setFiles([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const reasons = [
+    "Item Not Received",
+    "Item Not As Described",
+    "Wrong Item Received",
+    "Payment Issue",
+    "Other",
+  ];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" aria-live="polite" aria-relevant="additions">
-      <div>
-        <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-          Alasan Dispute
-        </label>
-        <motion.textarea
-          id="reason"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-            reasonValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
-          }`}
-          rows={4}
-          required
-          minLength={10}
-          maxLength={1000}
-          placeholder="Jelaskan alasan dispute Anda..."
-          aria-invalid={!reasonValid}
-          aria-describedby="reason-error"
-          whileFocus={{ scale: 1.02 }}
-          whileHover={{ scale: 1.02 }}
-        />
-        <AnimatePresence>
-          {!reasonValid && (
-            <motion.p
-              id="reason-error"
-              className="text-red-500 text-xs mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              role="alert"
+    <div className="w-full max-w-2xl mx-auto">
+      <AnimatePresence mode="wait">
+        {success ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-green-50 dark:bg-green-900/20 p-6 rounded-xl text-center space-y-4"
+          >
+            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+              Dispute Submitted Successfully
+            </h3>
+            <p className="text-green-700 dark:text-green-300">
+              Our team will review your case and get back to you within 24 hours.
+            </p>
+            <SmokeButton
+              variant="success"
+              onClick={() => setSuccess(false)}
+              className="mt-4"
             >
-              Alasan harus antara 10 sampai 1000 karakter.
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
+              Submit Another Dispute
+            </SmokeButton>
+          </motion.div>
+        ) : (
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onSubmit={handleSubmit}
+            className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg"
+          >
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Reason for Dispute
+              </label>
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
+              >
+                <option value="">Select a reason</option>
+                {reasons.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      <div>
-        <label htmlFor="evidence" className="block text-sm font-medium text-gray-700 mb-1">
-          Bukti Pendukung (opsional)
-        </label>
-        <input
-          id="evidence"
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={handleFileChange}
-          className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 ${
-            evidenceValid ? '' : 'border-red-500 ring-red-500'
-          }`}
-          aria-describedby="evidence-help"
-        />
-        <p id="evidence-help" className="text-xs text-gray-500 mt-1">
-          Upload bukti pendukung dalam format gambar atau PDF.
-        </p>
-        <AnimatePresence>
-          {!evidenceValid && (
-            <motion.p
-              id="evidence-error"
-              className="text-red-500 text-xs mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              role="alert"
-            >
-              Silakan upload bukti pendukung.
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Detailed Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
+                placeholder="Please provide details about your issue..."
+              />
+            </div>
 
-      <motion.button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-        whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
-        whileTap={{ scale: 0.95 }}
-        whileFocus={{ scale: 1.05, boxShadow: '0 0 8px rgb(220 38 38 / 0.7)' }}
-        aria-live="polite"
-      >
-        {isSubmitting ? 'Mengirim...' : 'Ajukan Dispute'}
-      </motion.button>
-    </form>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Evidence (Screenshots, Photos)
+              </label>
+              <div
+                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  PNG, JPG up to 10MB each
+                </p>
+              </div>
+
+              {/* File preview */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700"
+                  >
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`Evidence ${index + 1}`}
+                      className="w-full h-32 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            <div className="flex justify-end">
+              <SmokeButton
+                type="submit"
+                variant="primary"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
+                {isSubmitting ? "Submitting..." : "Submit Dispute"}
+              </SmokeButton>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

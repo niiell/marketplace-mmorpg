@@ -1,153 +1,146 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../src/lib/supabase';
-import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SmokeButton } from "./SmokeButton";
 
 interface ReviewFormProps {
-  listingId: string;
-  onReviewSubmitted: () => void;
+  listingId: number;
+  onSubmit: (data: { rating: number; review: string }) => Promise<void>;
 }
 
-export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormProps) {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
+export default function ReviewForm({ listingId, onSubmit }: ReviewFormProps) {
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [review, setReview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ratingValid, setRatingValid] = useState(true);
-  const [commentValid, setCommentValid] = useState(true);
-
-  useEffect(() => {
-    setRatingValid(rating >= 1 && rating <= 5);
-  }, [rating]);
-
-  useEffect(() => {
-    setCommentValid(comment.length >= 10 && comment.length <= 500);
-  }, [comment]);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ratingValid || !commentValid) {
-      toast.error('Mohon perbaiki input yang salah');
-      return;
-    }
+    setError(null);
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Silakan login terlebih dahulu');
-        setIsSubmitting(false);
-        return;
+      if (rating === 0) {
+        throw new Error("Please select a rating");
       }
 
-      const { error } = await supabase
-        .from('reviews')
-        .insert({
-          listing_id: listingId,
-          user_id: user.id,
-          rating,
-          comment
-        });
-
-      if (error) throw error;
-
-      toast.success('Review berhasil ditambahkan');
-      setComment('');
-      setRating(5);
-      onReviewSubmitted();
-    } catch (error: any) {
-      toast.error(error.message);
+      await onSubmit({ rating, review });
+      setSuccess(true);
+      setRating(0);
+      setReview("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <motion.form
-      onSubmit={handleSubmit}
-      className="space-y-4"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-    >
-      <div>
-        <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
-          Rating
-        </label>
-        <motion.select
-          id="rating"
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
-          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-            ratingValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
-          }`}
-          required
-          whileFocus={{ scale: 1.02 }}
-          whileHover={{ scale: 1.02 }}
+  const StarRating = () => (
+    <div className="flex items-center space-x-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <motion.button
+          key={star}
+          type="button"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setRating(star)}
+          onMouseEnter={() => setHoveredRating(star)}
+          onMouseLeave={() => setHoveredRating(0)}
+          className="focus:outline-none"
         >
-          {[5, 4, 3, 2, 1].map((value) => (
-            <option key={value} value={value}>
-              {value} Bintang
-            </option>
-          ))}
-        </motion.select>
-        <AnimatePresence>
-          {!ratingValid && (
-            <motion.p
-              className="text-red-500 text-xs mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Rating harus antara 1 sampai 5.
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-      
-      <div>
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">
-          Komentar
-        </label>
-        <motion.textarea
-          id="comment"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-            commentValid ? 'border-gray-300' : 'border-red-500 ring-red-500'
-          }`}
-          rows={4}
-          required
-          minLength={10}
-          maxLength={500}
-          placeholder="Berikan komentar Anda..."
-          whileFocus={{ scale: 1.02 }}
-          whileHover={{ scale: 1.02 }}
-        />
-        <AnimatePresence>
-          {!commentValid && (
-            <motion.p
-              className="text-red-500 text-xs mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Komentar harus antara 10 sampai 500 karakter.
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
+          <svg
+            className={`w-8 h-8 transition-colors duration-200 ${
+              star <= (hoveredRating || rating)
+                ? "text-yellow-400"
+                : "text-gray-300 dark:text-gray-600"
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        </motion.button>
+      ))}
+    </div>
+  );
 
-      <motion.button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgb(59 130 246 / 0.7)' }}
-        whileTap={{ scale: 0.95 }}
-        whileFocus={{ scale: 1.05, boxShadow: '0 0 8px rgb(59 130 246 / 0.7)' }}
-      >
-        {isSubmitting ? 'Mengirim...' : 'Kirim Review'}
-      </motion.button>
-    </motion.form>
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <AnimatePresence mode="wait">
+        {success ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-green-800 dark:text-green-200 text-center"
+          >
+            <p>Thanks for your review!</p>
+            <SmokeButton
+              variant="success"
+              size="sm"
+              onClick={() => setSuccess(false)}
+              className="mt-2"
+            >
+              Write Another Review
+            </SmokeButton>
+          </motion.div>
+        ) : (
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Rating
+              </label>
+              <StarRating />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="review"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Your Review
+              </label>
+              <textarea
+                id="review"
+                rows={4}
+                value={review}
+                onChange={(e) => setReview(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
+                placeholder="Share your experience..."
+              />
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-red-600 dark:text-red-400 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            <div className="flex justify-end">
+              <SmokeButton
+                type="submit"
+                variant="primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Review"}
+              </SmokeButton>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

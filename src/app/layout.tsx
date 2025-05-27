@@ -4,7 +4,6 @@ import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
 import Layout from "../components/Layout";
-import DarkModeToggle from "../components/DarkModeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,7 +58,7 @@ export default async function RootLayout({
   const messages = await getMessages(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,18 +69,28 @@ export default async function RootLayout({
         <meta property="og:url" content={metadata.openGraph?.url ? String(metadata.openGraph.url) : undefined} />
         <meta property="og:site_name" content={metadata.openGraph?.siteName ? String(metadata.openGraph.siteName) : undefined} />
         <meta property="og:locale" content={metadata.openGraph?.locale ? String(metadata.openGraph.locale) : undefined} />
-        {/* Removed og:type and twitter:card meta tags due to type errors */}
         <meta name="twitter:title" content={metadata.twitter?.title ? String(metadata.twitter.title) : undefined} />
         <meta name="twitter:description" content={metadata.twitter?.description ? String(metadata.twitter.description) : undefined} />
         <meta name="twitter:site" content={metadata.twitter?.site ? String(metadata.twitter.site) : undefined} />
         <meta name="twitter:creator" content={metadata.twitter?.creator ? String(metadata.twitter.creator) : undefined} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function getTheme() {
+                  const savedTheme = localStorage.getItem('theme');
+                  if (savedTheme) return savedTheme;
+                  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.classList.toggle('dark', getTheme() === 'dark');
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers messages={messages} locale={locale}>
           <Layout>
-            <header className="p-4 flex justify-end">
-              <DarkModeToggle />
-            </header>
             <ClientLayout>{children}</ClientLayout>
           </Layout>
         </Providers>

@@ -90,3 +90,29 @@
     box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0);
   }
 }
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-50px) scale(0);
+    opacity: 0;
+  }
+}
+
+.smoke-particle {
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: blur(4px);
+  will-change: transform, opacity;
+}
+
+.smoke-particle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+}
