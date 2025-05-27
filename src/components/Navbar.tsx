@@ -3,9 +3,12 @@ import { useState } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import DarkModeToggle from "./DarkModeToggle";
+import { useAuth } from "../context/AuthContext";
+import { SmokeButton } from "./SmokeButton";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
@@ -26,12 +29,14 @@ export default function Navbar() {
             >
               Marketplace
             </Link>
-            <Link
-              href="/dashboard"
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-            >
-              Dashboard
-            </Link>
+            {user && (
+              <Link
+                href="/dashboard"
+                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+              >
+                Dashboard
+              </Link>
+            )}
             <LanguageSwitcher />
             <DarkModeToggle />
           </div>

@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import React, { Suspense, useEffect, useState, useCallback } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,60 +21,36 @@ function LoginForm() {
     resolver: zodResolver(schema),
   });
   const [error, setError] = useState("");
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectedFrom = searchParams.get("redirectedFrom");
   const { signIn, user, session, loading } = useAuth();
 
-  const handleRedirect = useCallback(async () => {
-    if (isRedirecting) return;
-    
-    try {
-      setIsRedirecting(true);
-      const destination = redirectedFrom || "/dashboard";
-      console.log("[LoginForm] Redirecting to:", destination);
-      await router.push(destination);
-    } catch (err) {
-      console.error("[LoginForm] Redirect error:", err);
-      setError("Gagal melakukan redirect. Silakan refresh halaman.");
-    } finally {
-      setIsRedirecting(false);
-    }
-  }, [redirectedFrom, router, isRedirecting]);
-
+  // Handle initial auth state
   useEffect(() => {
     if (!loading && user && session) {
-      console.log("[LoginForm] User session detected, initiating redirect");
-      handleRedirect();
+      const destination = redirectedFrom || "/dashboard";
+      router.replace(destination);
     }
-  }, [user, session, loading, handleRedirect]);
+  }, [user, session, loading, redirectedFrom, router]);
 
   const onSubmit = async (data: FormData) => {
-    if (isRedirecting) return;
-
     try {
       setError("");
-      console.log("[LoginForm] Attempting login...");
       const result = await signIn(data.email, data.password);
       
       if (!result.success) {
         setError(result.error?.message || "Login gagal. Silakan coba lagi.");
-        console.error("[LoginForm] Login failed:", result.error);
         return;
       }
 
-      console.log("[LoginForm] Login successful");
-      // Don't call handleRedirect here - useEffect will handle it
-      
+      // Login successful - useEffect will handle redirect
     } catch (err) {
-      console.error("[LoginForm] Login error:", err);
       setError(err instanceof Error ? err.message : "Terjadi kesalahan saat login. Silakan coba lagi.");
     }
   };
 
-  // Prevent form submission during redirect
-  if (isRedirecting || loading) {
+  if (loading || (user && session)) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -125,6 +101,11 @@ function LoginForm() {
       </form>
       <p className="mt-4 text-center text-sm">
         Belum punya akun? <Link href="/register" className="text-blue-600 hover:underline">Daftar</Link>
+      </p>
+      <p className="mt-2 text-center text-sm">
+        <Link href="/reset-password" className="text-blue-600 hover:underline">
+          Lupa password?
+        </Link>
       </p>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -28,10 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      console.log("[AuthContext] Attempting sign in...");
       
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -39,31 +38,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (signInError) {
-        console.error("[AuthContext] Sign in error:", signInError);
         setError(signInError);
         return { success: false, error: signInError };
       }
 
       if (!data?.session) {
         const noSessionError = new Error("No session after login");
-        console.error("[AuthContext] Sign in error:", noSessionError);
         setError(noSessionError);
         return { success: false, error: noSessionError };
       }
 
-      console.log("[AuthContext] Sign in successful, updating state...");
-      setSession(data.session);
-      setUser(data.user);
-      setError(null);
       return { success: true };
     } catch (error: any) {
-      console.error("[AuthContext] Unexpected sign in error:", error);
       setError(error);
       return { success: false, error };
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       setError(null);
       const { error } = await supabase.auth.signOut();
@@ -71,34 +63,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(error);
         throw error;
       }
-      setSession(null);
-      setUser(null);
     } catch (error: any) {
-      console.error("[AuthContext] Sign out error:", error);
       setError(error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
+    async function initializeAuth() {
       try {
-        console.log("[AuthContext] Initializing auth state...");
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
 
         if (error) {
-          console.error("[AuthContext] Initial session error:", error);
           setError(error);
         } else {
-          console.log("[AuthContext] Initial session:", session ? "Found" : "None");
-          setSession(session);
-          setUser(session?.user ?? null);
+          if (session?.user?.id !== user?.id) {
+            setSession(session);
+            setUser(session?.user ?? null);
+          }
         }
       } catch (error) {
-        console.error("[AuthContext] Auth initialization error:", error);
         if (mounted) {
           setError(error as Error);
         }
@@ -107,17 +94,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
         }
       }
-    };
+    }
 
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         if (!mounted) return;
 
-        console.debug("[AuthContext] Auth state changed:", { event, sessionExists: !!session });
-        setSession(session);
-        setUser(session?.user ?? null);
+        if (session?.user?.id !== user?.id) {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
         setLoading(false);
       }
     );
@@ -126,10 +114,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [user?.id]); // Only re-run if user ID changes
+
+  const value = {
+    user,
+    session,
+    loading,
+    error,
+    signIn,
+    signOut,
+  };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, error, signIn, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
