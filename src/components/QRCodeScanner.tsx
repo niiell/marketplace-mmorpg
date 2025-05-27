@@ -16,7 +16,7 @@ export default function QRCodeScanner({ onScan, onError }: QRCodeScannerProps) {
   const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
 
   useEffect(() => {
     const getAvailableCameras = async () => {

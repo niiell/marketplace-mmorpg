@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SmokeButton } from "./SmokeButton";
 
 interface DisputeFormProps {
-  transactionId: string;
-  onSubmit: (data: FormData) => Promise<void>;
+  listingId: string;
+  onDisputeSubmitted: () => void;
 }
 
-export default function DisputeForm({ transactionId, onSubmit }: DisputeFormProps) {
+export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFormProps) {
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -40,16 +40,19 @@ export default function DisputeForm({ transactionId, onSubmit }: DisputeFormProp
       }
 
       const formData = new FormData();
-      formData.append("transactionId", transactionId);
+      formData.append("listingId", listingId);
       formData.append("reason", reason);
       formData.append("description", description);
       files.forEach((file) => formData.append("evidence[]", file));
 
-      await onSubmit(formData);
+      // TODO: Implement actual dispute submission logic here
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       setSuccess(true);
       setReason("");
       setDescription("");
       setFiles([]);
+      onDisputeSubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

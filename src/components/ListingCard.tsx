@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { formatCurrency } from "@/tools/formatCurrency";
+import { useCurrency } from "../context/CurrencyContext";
 import WishlistButton from "./WishlistButton";
 
 interface ListingCardProps {
@@ -36,6 +36,7 @@ export default function ListingCard({
     triggerOnce: true,
     threshold: 0.1,
   });
+  const { format: formatCurrency } = useCurrency();
 
   const rarityColors = {
     Common: "bg-gray-200 text-gray-800",
@@ -149,7 +150,7 @@ export default function ListingCard({
 
       {/* Wishlist button */}
       <div className="absolute top-3 right-3 z-10">
-        <WishlistButton itemId={id} />
+        <WishlistButton listingId={Number(id)} />
       </div>
 
       {/* Hover effect overlay */}

@@ -1,6 +1,29 @@
 "use client";
 
-export default function SkeletonLoader({ count = 6 }) {
+interface SkeletonLoaderProps {
+  count?: number;
+  height?: string;
+  className?: string;
+}
+
+export default function SkeletonLoader({
+  count = 6,
+  height,
+  className,
+}: SkeletonLoaderProps) {
+  // If height is provided, render a single skeleton line
+  if (height) {
+    return (
+      <div
+        className={`bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse ${
+          className || ""
+        }`}
+        style={{ height }}
+      />
+    );
+  }
+
+  // Otherwise render the default grid layout
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {[...Array(count)].map((_, index) => (

@@ -7,11 +7,12 @@ import "../styles/smoke-effect.css";
 interface SmokeButtonProps {
   onClick?: () => void;
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "success" | "danger";
+  variant?: "primary" | "secondary" | "success" | "danger" | "disabled";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   fullWidth?: boolean;
   className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
 export function SmokeButton({
@@ -22,6 +23,7 @@ export function SmokeButton({
   disabled = false,
   fullWidth = false,
   className = "",
+  type = "button",
 }: SmokeButtonProps) {
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([]);
   const [isHovered, setIsHovered] = useState(false);
@@ -57,6 +59,7 @@ export function SmokeButton({
     secondary: "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800",
     success: "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700",
     danger: "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700",
+    disabled: "bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-50",
   };
 
   const sizeClasses = {
@@ -81,6 +84,7 @@ export function SmokeButton({
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
+      type={type}
     >
       {/* Glow effect */}
       <motion.div

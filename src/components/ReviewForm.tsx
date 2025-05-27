@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SmokeButton } from "./SmokeButton";
 
 interface ReviewFormProps {
-  listingId: number;
-  onSubmit: (data: { rating: number; review: string }) => Promise<void>;
+  listingId: string;
+  onReviewSubmitted: () => void;
 }
 
-export default function ReviewForm({ listingId, onSubmit }: ReviewFormProps) {
+export default function ReviewForm({ listingId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [review, setReview] = useState("");
@@ -27,10 +27,13 @@ export default function ReviewForm({ listingId, onSubmit }: ReviewFormProps) {
         throw new Error("Please select a rating");
       }
 
-      await onSubmit({ rating, review });
+      // TODO: Implement actual review submission logic here
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       setSuccess(true);
       setRating(0);
       setReview("");
+      onReviewSubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

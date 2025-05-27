@@ -98,8 +98,16 @@ export default function ProductDetailPage() {
         <Breadcrumbs
           items={[
             { href: '/', label: 'Home' },
-            { href: `/category/${product.category?.id || ''}`, label: product.category?.name || 'Kategori' },
-            { href: '#', label: product.title, current: true },
+            { 
+              href: `/category/${product.category?.id || ''}`, 
+              label: product.category?.name || 'Kategori',
+              current: false 
+            },
+            { 
+              href: '#', 
+              label: product.title || '', 
+              current: true 
+            },
           ]}
         />
         <h1 className="text-3xl font-bold mb-4">{product.title}</h1>

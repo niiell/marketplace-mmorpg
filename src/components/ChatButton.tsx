@@ -3,20 +3,32 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SmokeButton } from "./SmokeButton";
+import { useRouter } from "next/navigation";
 
 interface ChatButtonProps {
+  listingId: number;
   unreadCount?: number;
-  onClick: () => void;
+  onClick?: () => void;
   className?: string;
 }
 
 export default function ChatButton({
+  listingId,
   unreadCount = 0,
   onClick,
   className = "",
 }: ChatButtonProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      router.push(`/chat/${listingId}`);
+    }
+  };
 
   // Trigger animation when unread count changes
   useEffect(() => {
@@ -36,7 +48,7 @@ export default function ChatButton({
       whileTap={{ scale: 0.95 }}
     >
       <SmokeButton
-        onClick={onClick}
+        onClick={handleClick}
         variant="primary"
         className="flex items-center space-x-2 px-4 py-2"
       >
