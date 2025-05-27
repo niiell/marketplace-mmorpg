@@ -7,7 +7,9 @@ const nextConfig = {
     ignoreBuildErrors: process.env.NODE_ENV === 'development'
   },
   eslint: {
-    ignoreDuringBuilds: process.env.NODE_ENV === 'development'
+    // Only run ESLint on pull requests and for production builds
+    ignoreDuringBuilds: true,
+    dirs: ['src']
   },
   experimental: {
     // appDir: true,

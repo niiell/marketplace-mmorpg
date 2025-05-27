@@ -17,6 +17,7 @@ import Modal from '../../../components/Modal';
 import SkeletonLoader from '../../../components/SkeletonLoader';
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export default function ProductDetailPage() {
   const router = useRouter();
