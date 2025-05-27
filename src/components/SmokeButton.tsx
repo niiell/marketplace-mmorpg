@@ -14,7 +14,7 @@ interface SmokeButtonProps {
   className?: string;
 }
 
-export default function SmokeButton({
+export function SmokeButton({
   onClick,
   children,
   variant = "primary",

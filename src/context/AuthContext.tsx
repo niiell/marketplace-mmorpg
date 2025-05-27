@@ -2,13 +2,14 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "../lib/supabase";
+import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
-  user: any | null;
-  session: any | null;
+  user: User | null;
+  session: Session | null;
   loading: boolean;
   error: Error | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: Error }>;
   signOut: () => Promise<void>;
 }
 
@@ -17,37 +18,54 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   error: null,
-  signIn: async () => {},
+  signIn: async () => ({ success: false }),
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
-  const [session, setSession] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      setError(null);
+      console.log("[AuthContext] Attempting sign in...");
+      
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) {
-        setError(error);
-        throw error;
+
+      if (signInError) {
+        console.error("[AuthContext] Sign in error:", signInError);
+        setError(signInError);
+        return { success: false, error: signInError };
       }
+
+      if (!data?.session) {
+        const noSessionError = new Error("No session after login");
+        console.error("[AuthContext] Sign in error:", noSessionError);
+        setError(noSessionError);
+        return { success: false, error: noSessionError };
+      }
+
+      console.log("[AuthContext] Sign in successful, updating state...");
       setSession(data.session);
-      setUser(data.session?.user ?? null);
+      setUser(data.user);
       setError(null);
+      return { success: true };
     } catch (error: any) {
-      console.error("[AuthContext] Sign in error:", error);
+      console.error("[AuthContext] Unexpected sign in error:", error);
       setError(error);
+      return { success: false, error };
     }
   };
 
   const signOut = async () => {
     try {
+      setError(null);
       const { error } = await supabase.auth.signOut();
       if (error) {
         setError(error);
@@ -55,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setSession(null);
       setUser(null);
-      setError(null);
     } catch (error: any) {
       console.error("[AuthContext] Sign out error:", error);
       setError(error);
@@ -63,30 +80,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Get initial session and user
-    supabase.auth.getSession().then(({ data }) => {
-      console.debug("[AuthContext] Initial session fetch:", data.session);
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-      setError(null);
-    }).catch((error) => {
-      setError(error);
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.debug("[AuthContext] Auth state changed event:", event);
-      console.debug("[AuthContext] Auth state changed session:", session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      setError(null);
-    });
+    const initializeAuth = async () => {
+      try {
+        console.log("[AuthContext] Initializing auth state...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (error) {
+          console.error("[AuthContext] Initial session error:", error);
+          setError(error);
+        } else {
+          console.log("[AuthContext] Initial session:", session ? "Found" : "None");
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error("[AuthContext] Auth initialization error:", error);
+        if (mounted) {
+          setError(error as Error);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        console.debug("[AuthContext] Auth state changed:", { event, sessionExists: !!session });
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
     return () => {
-      listener?.subscription.unsubscribe();
+      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 

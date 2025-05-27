@@ -8,6 +8,21 @@ const allListings: { category?: string; [key: string]: any }[] = [];
 import ListingCard from "../../components/ListingCard";
 import SkeletonLoader from "../../components/SkeletonLoader";
 
+interface Listing {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
+  category: string;
+  rarity?: string;
+  level?: number;
+  seller: {
+    name: string;
+    rating: number;
+    avatarUrl?: string;
+  };
+}
+
 export default function MarketplacePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,8 +89,18 @@ export default function MarketplacePage() {
           <p className="text-center text-gray-500">No listings found.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+            {listings.map((listing: Listing) => (
+              <ListingCard
+                key={listing.id}
+                id={listing.id}
+                title={listing.title}
+                price={listing.price}
+                image={listing.image}
+                category={listing.category}
+                rarity={listing.rarity}
+                level={listing.level}
+                seller={listing.seller}
+              />
             ))}
           </div>
         )}
