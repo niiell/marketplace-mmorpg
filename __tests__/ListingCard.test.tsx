@@ -1,9 +1,10 @@
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import ListingCard from "../src/components/ListingCard";
+import type { ListingCardProps } from "../src/components/ListingCard";
 import { CurrencyProvider } from '../src/context/CurrencyContext';
 import { CartProvider } from '../src/context/CartContext';
 
-const mockListing = {
+const mockListing: ListingCardProps = {
   id: "1",
   title: "Test Item",
   price: 1000,

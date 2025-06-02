@@ -10,7 +10,7 @@ import ChatButton from "./ChatButton";
 import BuyButton from "./BuyButton";
 import { useState } from "react";
 
-interface ListingCardProps {
+export interface ListingCardProps {
   id: string;
   title: string;
   price: number;
