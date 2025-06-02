@@ -63,3 +63,21 @@ public/sw.js
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Lighthouse & test reports
+lighthouse-report.json
+lighthouse-*.json
+
+# Test snapshots (optional, uncomment if you don't want to commit snapshots)
+#__tests__/__snapshots__/
+
+# Temp files
+*.log
+*.tmp
+
+# Service worker & workbox (if generated at build)
+public/sw.js
+public/workbox-*.js
+
+# Keep .env.example for reference
+!.env.example
