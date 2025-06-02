@@ -1,6 +1,8 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { match } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
 
 const PUBLIC_ROUTES = [
   '/login',
@@ -14,6 +16,9 @@ const PUBLIC_ROUTES = [
 const isPublicRoute = (path: string) => {
   return PUBLIC_ROUTES.some(route => path.startsWith(route));
 };
+
+const locales = ['en', 'id', 'ph', 'th'];
+const defaultLocale = 'id';
 
 /**
  * Middleware function to handle authentication and security headers.
@@ -63,11 +68,49 @@ export async function middleware(req: NextRequest) {
   }
 }
 
+function getLocale(request: NextRequest): string {
+  const headers = new Headers(request.headers);
+  const acceptLanguage = headers.get('accept-language');
+  
+  if (acceptLanguage) {
+    headers.set('accept-language', acceptLanguage.replaceAll('_', '-'));
+  }
+
+  const headersObject = Object.fromEntries(headers.entries());
+  const languages = new Negotiator({ headers: headersObject }).languages();
+  
+  return match(languages, locales, defaultLocale);
+}
+
+/**
+ * Middleware function to handle automatic language detection and routing.
+ * 
+ * @param {NextRequest} request - The incoming request.
+ * @returns {Promise<NextResponse>} The response to be sent back to the client.
+ */
+export function languageMiddleware(request: NextRequest) {
+  // Check if there is any supported locale in the pathname
+  const pathname = request.nextUrl.pathname;
+  const pathnameIsMissingLocale = locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  );
+
+  // Redirect if there is no locale
+  if (pathnameIsMissingLocale) {
+    const locale = getLocale(request);
+    const newUrl = new URL(`/${locale}${pathname}`, request.url);
+    newUrl.search = request.nextUrl.search;
+    
+    return NextResponse.redirect(newUrl);
+  }
+}
+
 /**
  * Configuration for the middleware.
  */
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'
   ],
 };

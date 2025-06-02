@@ -1,90 +1,107 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Fragment } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline";
 
-interface BreadcrumbItem {
-  href: string;
+export interface BreadcrumbItem {
   label: string;
-  current?: boolean;
+  href?: string;
+  icon?: React.ReactNode;
 }
 
 interface BreadcrumbsProps {
-  items?: BreadcrumbItem[];
+  items: BreadcrumbItem[];
+  className?: string;
+  showHome?: boolean;
 }
 
-export default function Breadcrumbs({ items }: BreadcrumbsProps) {
-  const pathname = usePathname();
-  const paths =
-    items ||
-    pathname
-      ?.split("/")
-      .filter(Boolean)
-      .map((path, index, array) => ({
-        href: `/${array.slice(0, index + 1).join("/")}`,
-        label: path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, " "),
-        current: index === array.length - 1,
-      })) ||
-    [];
-
-  const variants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-      },
-    }),
-  };
+export default function Breadcrumbs({
+  items,
+  className = "",
+  showHome = true,
+}: BreadcrumbsProps) {
+  const allItems = showHome
+    ? [{ label: "Home", href: "/", icon: <HomeIcon className="h-4 w-4" /> }, ...items]
+    : items;
 
   return (
-    <nav aria-label="Breadcrumb" className="py-3 px-4 sm:px-6 lg:px-8">
-      <ol className="flex flex-wrap items-center space-x-2 text-sm sm:text-base">
-        <motion.li
-          initial="hidden"
-          animate="visible"
-          variants={variants}
-          custom={0}
-          className="flex items-center"
-        >
-          <Link
-            href="/"
-            className="text-gray-500 hover:text-blue-600 dark:text-gray-400 
-              dark:hover:text-blue-400 flex items-center transition-colors duration-200"
-          >
-            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="sr-only">Home</span>
-          </Link>
-        </motion.li>
+    <nav aria-label="Breadcrumb" className={className}>
+      <ol className="flex items-center space-x-2">
+        {allItems.map((item, index) => (
+          <Fragment key={item.label}>
+            {index > 0 && (
+              <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+            )}
+            <li>
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  className={`group flex items-center space-x-2 text-sm font-medium ${
+                    index === allItems.length - 1
+                      ? "text-gray-900 dark:text-white"
+                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  }`}
+                >
+                  {item.icon && (
+                    <motion.span
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex-shrink-0"
+                    >
+                      {item.icon}
+                    </motion.span>
+                  )}
+                  <motion.span
+                    className="truncate"
+                    whileHover={{ x: 2 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    {item.label}
+                  </motion.span>
 
-        {paths.map((item, index) => (
-          <motion.li
-            key={item.href}
-            initial="hidden"
-            animate="visible"
-            variants={variants}
-            custom={index + 1}
-            className="flex items-center"
-          >
-            <ChevronRight className="flex-shrink-0 w-4 h-4 text-gray-400 dark:text-gray-600" />
-            <Link
-              href={item.href}
-              className={`ml-2 ${
-                item.current
-                  ? "font-medium text-blue-600 dark:text-blue-400"
-                  : "text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-              } transition-colors duration-200`}
-              aria-current={item.current ? "page" : undefined}
-            >
-              <span className="truncate max-w-[150px] sm:max-w-none">{item.label}</span>
-            </Link>
-          </motion.li>
+                  {/* Animated underline */}
+                  {index !== allItems.length - 1 && (
+                    <motion.div
+                      className="absolute -bottom-px left-0 h-0.5 w-full bg-gray-200 dark:bg-gray-700"
+                      initial={false}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        originX: 0,
+                        scaleX: 0,
+                      }}
+                      whileHover={{
+                        scaleX: 1,
+                      }}
+                    />
+                  )}
+                </Link>
+              ) : (
+                <span className="flex items-center space-x-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+                  <span className="truncate">{item.label}</span>
+                </span>
+              )}
+            </li>
+          </Fragment>
         ))}
       </ol>
+
+      {/* Mobile Breadcrumb */}
+      <div className="sm:hidden">
+        <button
+          type="button"
+          className="flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white"
+          onClick={() => window.history.back()}
+        >
+          <ChevronRightIcon
+            className="h-4 w-4 rotate-180 transform text-gray-400"
+            aria-hidden="true"
+          />
+          <span>Back</span>
+        </button>
+      </div>
     </nav>
   );
 }

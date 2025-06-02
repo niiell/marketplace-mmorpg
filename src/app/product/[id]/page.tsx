@@ -3,8 +3,7 @@ import Image from 'next/image';
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from '../../../lib/supabase';
-import gsap from "gsap";
-import { Card, CardBody, CardFooter, Button as NextUIButton } from "@nextui-org/react";
+import { Card, CardBody } from "@nextui-org/react";
 import ChatButton from '../../../components/ChatButton';
 import ReviewForm from '../../../components/ReviewForm';
 import AuthGuard from '../../../components/AuthGuard';
@@ -18,6 +17,7 @@ import SkeletonLoader from '../../../components/SkeletonLoader';
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import BuyButton from '../../../components/BuyButton';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -31,38 +31,36 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!id) return;
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
+        if (!id) return;
+        
+        const { data: product, error } = await supabase
+          .from('listings')
+          .select(`
+            *,
+            seller:seller_id (
+              username,
+              seller_rating,
+              avatar_url
+            )
+          `)
           .eq('id', id)
           .single();
 
-        if (error) {
-          console.error('Error fetching product:', error);
-          return;
-        }
-        setProduct(data);
-
-        // Fetch average rating
-        const { data: reviews, error: reviewsError } = await supabase
-          .from('reviews')
+        if (error) throw error;
+        
+        // Get average rating
+        const { data: ratings, error: ratingsError } = await supabase
+          .from('seller_ratings')
           .select('rating')
-          .eq('product_id', id);
+          .eq('seller_id', product.seller_id);
 
-        if (reviewsError) {
-          console.error('Error fetching reviews:', reviewsError);
-          setAvgRating(null);
-          return;
+        if (!ratingsError && ratings) {
+          const avg = ratings.reduce((sum, curr) => sum + curr.rating, 0) / ratings.length;
+          setAvgRating(avg || null);
         }
 
-        if (reviews && reviews.length > 0) {
-          const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-          setAvgRating(total / reviews.length);
-        } else {
-          setAvgRating(null);
-        }
+        setProduct(product);
       } catch (error) {
         console.error('Error fetching product:', error);
       }
@@ -100,41 +98,43 @@ export default function ProductDetailPage() {
             { href: '/', label: 'Home' },
             { 
               href: `/category/${product.category?.id || ''}`, 
-              label: product.category?.name || 'Kategori',
-              current: false 
+              label: product.category?.name || 'Kategori'
             },
             { 
               href: '#', 
-              label: product.title || '', 
-              current: true 
+              label: product.title || ''
             },
           ]}
         />
         <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Image Gallery */}
-          <div className="space-y-4 product-gallery">
-            {Array.isArray(product.images) && product.images.length > 0 ? (
-              <Swiper spaceBetween={16} slidesPerView={1} className="rounded-lg shadow">
-                {product.images.map((img: string, idx: number) => (
-                  <SwiperSlide key={idx}>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Product Images */}
+          <div className="space-y-4">
+            {product.images?.length > 0 ? (
+              <Swiper
+                spaceBetween={10}
+                slidesPerView={1}
+                navigation
+                pagination={{ clickable: true }}
+              >
+                {product.images.map((image: string, index: number) => (
+                  <SwiperSlide key={index}>
                     <Image
-                      src={img}
-                      alt={product.title + ' ' + (idx + 1)}
-                      className="w-full h-64 object-cover rounded-lg"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      placeholder="blur"
-                      blurDataURL="/placeholder.png"
+                      src={image}
+                      alt={`${product.title} image ${index + 1}`}
+                      width={600}
+                      height={400}
+                      className="rounded-lg"
                     />
                   </SwiperSlide>
                 ))}
               </Swiper>
             ) : (
-              <Card shadow="sm">
-                <CardBody className="overflow-visible p-0">
+              <Card>
+                <CardBody>
                   <Image
-                    src={product.image_url}
+                    src={product.image_url || '/placeholder.png'}
                     alt={product.title}
                     className="w-full h-64 object-cover rounded-lg shadow"
                     fill
@@ -149,8 +149,8 @@ export default function ProductDetailPage() {
 
           {/* Product Details */}
           <div>
-            <p className="text-lg text-gray-700 mb-4">{product.description}</p>
-            <p className="text-2xl font-bold text-blue-700 mb-6">Rp {product.price}</p>
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">{product.description}</p>
+            <p className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6">Rp {product.price}</p>
             <div className="flex items-center gap-2 mb-2">
               <span className="font-semibold">Rating Penjual:</span>
               {avgRating !== null ? (
@@ -160,49 +160,48 @@ export default function ProductDetailPage() {
               )}
             </div>
             <div className="flex gap-4 product-action">
-              <AuthGuard>
-                <ChatButton listingId={Number(id)} />
-              </AuthGuard>
-              <NextUIButton
-                color="success"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                as={motion.button}
-                whileHover={{ scale: 1.05, boxShadow: '0 0 12px rgba(0, 255, 255, 0.7)', filter: 'blur(1px)' }}
-                whileFocus={{ scale: 1.05, boxShadow: '0 0 12px rgba(0, 255, 255, 0.7)', filter: 'blur(1px)' }}
-              >
-                Beli Sekarang
-              </NextUIButton>
-              <AuthGuard>
-                <WishlistButton listingId={Number(id)} />
-              </AuthGuard>
+              <BuyButton
+                item={{
+                  id: product.id,
+                  title: product.title,
+                  price: product.price,
+                  image_url: product.image_url
+                }}
+                className="flex-1"
+              />
+              <div className="flex gap-2">
+                <AuthGuard>
+                  <WishlistButton listingId={product.id} />
+                </AuthGuard>
+                <AuthGuard>
+                  <ChatButton listingId={product.id} />
+                </AuthGuard>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-2">Informasi Item</h3>
+              <dl className="grid grid-cols-2 gap-4">
+                <div>
+                  <dt className="text-gray-600 dark:text-gray-400">Kategori</dt>
+                  <dd>{product.category}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-600 dark:text-gray-400">Level</dt>
+                  <dd>{product.level}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-600 dark:text-gray-400">Rarity</dt>
+                  <dd>{product.rarity}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-600 dark:text-gray-400">Penjual</dt>
+                  <dd>{product.seller?.username || 'Unknown'}</dd>
+                </div>
+              </dl>
             </div>
           </div>
-        </div>
-
-        {/* Reviews */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-4">Ulasan</h2>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => setIsReviewModalOpen(true)}
-          >
-            Tulis Ulasan
-          </button>
-          <AuthGuard>
-            {/* Render ReviewForm inline below the "Tulis Ulasan" button to avoid empty area */}
-            <ReviewForm listingId={id as string} onReviewSubmitted={() => setIsReviewModalOpen(false)} />
-          </AuthGuard>
-        </div>
-
-        {/* Dispute */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-4">Ajukan Dispute</h2>
-          <button
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            onClick={() => setIsDisputeModalOpen(true)}
-          >
-            Ajukan Dispute
-          </button>
         </div>
 
         {/* Modals */}

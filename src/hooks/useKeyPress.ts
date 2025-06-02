@@ -1,29 +1,25 @@
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
-export function useKeyPress(targetKey: string) {
-  const [isPressed, setIsPressed] = useState(false);
+type KeyHandler = (event: KeyboardEvent) => void;
+
+export function useKeyPress(targetKey: string, handler: KeyHandler) {
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (
+        event.key === targetKey &&
+        // Don't trigger if user is typing in an input/textarea
+        !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      ) {
+        handler(event);
+      }
+    },
+    [targetKey, handler]
+  );
 
   useEffect(() => {
-    const handleKeyDown = ({ key }: KeyboardEvent) => {
-      if (key === targetKey) {
-        setIsPressed(true);
-      }
-    };
-
-    const handleKeyUp = ({ key }: KeyboardEvent) => {
-      if (key === targetKey) {
-        setIsPressed(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
+    window.addEventListener("keydown", handleKeyPress);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [targetKey]);
-
-  return isPressed;
+  }, [handleKeyPress]);
 }

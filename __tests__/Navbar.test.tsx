@@ -1,10 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Navbar from "../src/components/Navbar";
+import { CurrencyProvider } from '../src/context/CurrencyContext';
+import { CartProvider } from '../src/context/CartContext';
+
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <CurrencyProvider>
+    <CartProvider>
+      {children}
+    </CartProvider>
+  </CurrencyProvider>
+);
 
 describe("Navbar", () => {
   beforeEach(() => {
-    render(<Navbar />);
+    render(<Navbar />, { wrapper: TestWrapper });
   });
 
   it("renders the site title", () => {

@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,8 +9,81 @@
   --secondary: #64748b;
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+[data-theme="dark"] {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --primary: #60a5fa;
+  --secondary: #94a3b8;
+}
+
+@layer base {
+  /* Typography baseline */
+  h1 { @apply text-[2.25rem] leading-[1.3] font-bold mb-6; }
+  h2 { @apply text-[1.875rem] leading-[1.4] font-semibold mb-4; }
+  h3 { @apply text-[1.5rem] leading-[1.5] font-semibold mb-3; }
+  h4 { @apply text-[1.25rem] leading-[1.6] font-medium mb-2; }
+  p { @apply text-base leading-[1.6] mb-4; }
+
+  /* Interactive elements */
+  button:focus, a:focus {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+  
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-full hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary/90 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary/10 text-secondary hover:bg-secondary/20;
+  }
+
+  .input-base {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 
+    bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+    focus:ring-2 focus:ring-primary focus:border-transparent
+    disabled:opacity-50 disabled:cursor-not-allowed
+    transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
 }

@@ -37,33 +37,28 @@ create table if not exists games (
 
 -- LISTINGS
 create table if not exists listings (
-  id bigserial primary key,
-  seller_id uuid references auth.users(id) on delete cascade,
-  title text not null,
-  description text,
-  category_id bigint references categories(id),
-  game_id bigint references games(id),
-  type text check (type in ('item','gold','jasa')),
-  price numeric not null,
-  stock integer,
-  status text default 'aktif' check (status in ('aktif','terjual','dibanned')),
-  image_url text,
-  created_at timestamptz default now()
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  seller_id UUID NOT NULL,
+  title TEXT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  stock INT,
+  max_per_order INT,
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- TRANSACTIONS
 create table if not exists transactions (
-  id bigserial primary key,
-  buyer_id uuid references auth.users(id),
-  seller_id uuid references auth.users(id),
-  listing_id bigint references listings(id),
-  amount numeric not null,
-  status_order text default 'pending'
-    check (status_order in ('pending','paid','delivered','confirmed','approved','cancelled')),
-  status_payment text default 'unpaid'
-    check (status_payment in ('unpaid','paid','refunded')),
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  listing_id UUID NOT NULL REFERENCES listings(id),
+  buyer_id UUID NOT NULL,
+  seller_id UUID NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  amount DECIMAL(10,2) NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- TRANSACTION_LOGS
@@ -128,21 +123,16 @@ create table if not exists notifications (
 
 -- WISHLIST / FAVORITES
 create table if not exists wishlist (
-  id bigserial primary key,
-  user_id uuid references auth.users(id) on delete cascade,
-  listing_id bigint references listings(id) on delete cascade,
-  created_at timestamptz default now(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL,
+  listing_id UUID NOT NULL REFERENCES listings(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   unique(user_id, listing_id)
 );
 
--- CMS POSTS
-create table if not exists cms_posts (
-  id bigserial primary key,
-  title text not null,
-  slug text unique not null,
-  content text,
-  metadata jsonb,
-  created_at timestamptz default now()
+create table if not exists wishlist_stats (
+  listing_id UUID PRIMARY KEY REFERENCES listings(id),
+  save_count INT NOT NULL DEFAULT 0
 );
 
 -- ENABLE RLS
@@ -256,3 +246,118 @@ create index idx_reviews_reviewee_id on reviews (reviewee_id);
 create index idx_reviews_transaction_id on reviews (transaction_id);
 
 create index idx_notifications_user_id on notifications (user_id);
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create function to check and update stock during transaction
+CREATE OR REPLACE FUNCTION create_transaction_with_stock_check(
+    p_listing_id UUID,
+    p_buyer_id UUID,
+    p_seller_id UUID,
+    p_amount DECIMAL,
+    p_quantity INT DEFAULT 1
+) RETURNS TABLE (
+    id UUID,
+    status TEXT
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_stock INT;
+    v_transaction_id UUID;
+BEGIN
+    -- Lock the listing row for update
+    SELECT stock INTO v_stock
+    FROM listings
+    WHERE id = p_listing_id
+    FOR UPDATE;
+    
+    -- Check if we have enough stock
+    IF v_stock IS NOT NULL AND v_stock < p_quantity THEN
+        RAISE EXCEPTION 'insufficient_stock';
+    END IF;
+    
+    -- Update stock if it's tracked
+    IF v_stock IS NOT NULL THEN
+        UPDATE listings
+        SET stock = stock - p_quantity,
+            updated_at = NOW()
+        WHERE id = p_listing_id;
+    END IF;
+    
+    -- Create transaction
+    INSERT INTO transactions (
+        listing_id,
+        buyer_id,
+        seller_id,
+        quantity,
+        amount,
+        status
+    ) VALUES (
+        p_listing_id,
+        p_buyer_id,
+        p_seller_id,
+        p_quantity,
+        p_amount,
+        'pending'
+    ) RETURNING id INTO v_transaction_id;
+    
+    RETURN QUERY
+    SELECT v_transaction_id AS id,
+           'pending'::TEXT AS status;
+END;
+$$;
+
+-- Create RLS policies
+CREATE POLICY "Enable read access for all active listings"
+ON listings FOR SELECT
+TO authenticated
+USING (status = 'active');
+
+CREATE POLICY "Enable read/write access for seller's own listings"
+ON listings FOR ALL
+TO authenticated
+USING (seller_id = auth.uid());
+
+CREATE POLICY "Enable read access for users' own transactions"
+ON transactions FOR SELECT
+TO authenticated
+USING (buyer_id = auth.uid() OR seller_id = auth.uid());
+
+CREATE POLICY "Enable insert access for buyers"
+ON transactions FOR INSERT
+TO authenticated
+WITH CHECK (buyer_id = auth.uid());
+
+CREATE POLICY "Enable wishlist management for authenticated users"
+ON wishlist FOR ALL
+TO authenticated
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Enable read access for wishlist stats"
+ON wishlist_stats FOR SELECT
+TO authenticated
+USING (true);
+
+-- Create triggers for statistics
+CREATE OR REPLACE FUNCTION update_wishlist_stats()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO wishlist_stats (listing_id, save_count)
+        VALUES (NEW.listing_id, 1)
+        ON CONFLICT (listing_id)
+        DO UPDATE SET save_count = wishlist_stats.save_count + 1;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE wishlist_stats
+        SET save_count = save_count - 1
+        WHERE listing_id = OLD.listing_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER wishlist_stats_trigger
+AFTER INSERT OR DELETE ON wishlist
+FOR EACH ROW
+EXECUTE FUNCTION update_wishlist_stats();

@@ -11,62 +11,42 @@ interface DisputeFormProps {
 
 export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFormProps) {
   const [reason, setReason] = useState("");
-  const [description, setDescription] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [evidence, setEvidence] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+  const [touched, setTouched] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reason) {
+      setError("Please provide a reason for the dispute");
+      return;
+    }
+    setLoading(true);
     setError(null);
-    setIsSubmitting(true);
 
     try {
-      if (!reason) {
-        throw new Error("Please select a reason for the dispute");
-      }
-
       const formData = new FormData();
       formData.append("listingId", listingId);
       formData.append("reason", reason);
-      formData.append("description", description);
-      files.forEach((file) => formData.append("evidence[]", file));
+      if (evidence) {
+        formData.append("evidence", evidence);
+      }
 
       // TODO: Implement actual dispute submission logic here
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
 
       setSuccess(true);
       setReason("");
-      setDescription("");
-      setFiles([]);
+      setEvidence(null);
       onDisputeSubmitted();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-
-  const reasons = [
-    "Item Not Received",
-    "Item Not As Described",
-    "Wrong Item Received",
-    "Payment Issue",
-    "Other",
-  ];
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -76,36 +56,10 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-green-50 dark:bg-green-900/20 p-6 rounded-xl text-center space-y-4"
+            className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-green-800 dark:text-green-200"
+            role="alert"
           >
-            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-green-600 dark:text-green-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
-              Dispute Submitted Successfully
-            </h3>
-            <p className="text-green-700 dark:text-green-300">
-              Our team will review your case and get back to you within 24 hours.
-            </p>
-            <SmokeButton
-              variant="success"
-              onClick={() => setSuccess(false)}
-              className="mt-4"
-            >
-              Submit Another Dispute
-            </SmokeButton>
+            <p>Your dispute has been submitted successfully. Our team will review it shortly.</p>
           </motion.div>
         ) : (
           <motion.form
@@ -113,131 +67,140 @@ export default function DisputeForm({ listingId, onDisputeSubmitted }: DisputeFo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             onSubmit={handleSubmit}
-            className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg"
+            className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"
+            aria-label="Dispute submission form"
           >
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label 
+                htmlFor="reason"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Reason for Dispute
+                <span className="text-red-500 ml-1" aria-hidden="true">*</span>
               </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
-              >
-                <option value="">Select a reason</option>
-                {reasons.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Detailed Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
-                placeholder="Please provide details about your issue..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Evidence (Screenshots, Photos)
-              </label>
-              <div
-                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  multiple
-                  accept="image/*"
-                  className="hidden"
+              <div className="relative">
+                <textarea
+                  id="reason"
+                  value={reason}
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    setTouched(true);
+                  }}
+                  rows={4}
+                  className={`w-full px-4 py-2 rounded-lg border
+                    ${error && touched ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}
+                    bg-white dark:bg-gray-800 
+                    text-gray-900 dark:text-white 
+                    focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
+                    focus:border-transparent transition-colors duration-200`}
+                  placeholder="Please describe your issue in detail..."
+                  aria-required="true"
+                  aria-invalid={error ? "true" : "false"}
+                  aria-describedby={error ? "reason-error" : undefined}
                 />
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: reason.length > 0 ? 1 : 0 }}
+                  className="absolute top-2 right-2"
                 >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500">
-                  PNG, JPG up to 10MB each
-                </p>
-              </div>
-
-              {/* File preview */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700"
+                  <svg 
+                    className="w-5 h-5 text-green-500" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    aria-hidden="true"
                   >
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`Evidence ${index + 1}`}
-                      className="w-full h-32 object-cover"
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M5 13l4 4L19 7" 
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                  </svg>
+                </motion.div>
               </div>
+              {error && touched && (
+                <motion.p
+                  id="reason-error"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-600 dark:text-red-400 text-sm"
+                  role="alert"
+                >
+                  {error}
+                </motion.p>
+              )}
             </div>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg"
+            <div className="space-y-2">
+              <label 
+                htmlFor="evidence"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                {error}
-              </motion.div>
-            )}
+                Supporting Evidence (Optional)
+                <span className="text-xs text-gray-500 ml-2">(Images or documents)</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="evidence"
+                  type="file"
+                  onChange={(e) => setEvidence(e.target.files?.[0] || null)}
+                  accept="image/*,.pdf,.doc,.docx"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                    focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                    focus:border-transparent transition-colors duration-200"
+                  aria-describedby="evidence-hint"
+                />
+              </div>
+              <p 
+                id="evidence-hint" 
+                className="text-xs text-gray-500 dark:text-gray-400"
+              >
+                Accepted formats: Images, PDF, DOC. Max size: 10MB
+              </p>
+            </div>
 
             <div className="flex justify-end">
-              <SmokeButton
+              <motion.button
                 type="submit"
-                variant="primary"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto"
+                disabled={loading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  px-6 py-2 rounded-lg font-medium text-white
+                  ${loading 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'}
+                  transition-colors duration-200
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                `}
+                aria-busy={loading}
               >
-                {isSubmitting ? "Submitting..." : "Submit Dispute"}
-              </SmokeButton>
+                {loading ? (
+                  <span className="flex items-center space-x-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <span>Submitting...</span>
+                  </span>
+                ) : (
+                  'Submit Dispute'
+                )}
+              </motion.button>
             </div>
           </motion.form>
         )}

@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
 import Layout from "../components/Layout";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,35 +16,81 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Marketplace MMORPG SEA",
-  description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
-  openGraph: {
-    title: "Marketplace MMORPG SEA",
-    description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
-    url: "https://yourdomain.com",
-    siteName: "Marketplace MMORPG SEA",
-    locale: "id_ID",
-  },
-  twitter: {
-    title: "Marketplace MMORPG SEA",
-    description: "Jual beli item, gold, jasa game MMORPG Asia Tenggara. Aman, cepat, terpercaya.",
-    site: "@yourtwitterhandle",
-    creator: "@yourtwitterhandle",
-  },
-};
+const DEFAULT_LOCALE = "en";
 
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
-
-async function getMessages(locale: string) {
+async function getMessages(locale: string = DEFAULT_LOCALE) {
+  const finalLocale = locale || DEFAULT_LOCALE;
   try {
-    return (await import(`../../locales/${locale}.json`)).default;
+    return (await import(`../../locales/${finalLocale}.json`)).default;
   } catch (error) {
-    console.error(`Failed to load messages for locale: ${locale}`, error);
+    console.error(`Failed to load messages for locale: ${finalLocale}`, error);
+    // Try to load default locale as fallback
+    if (finalLocale !== DEFAULT_LOCALE) {
+      try {
+        return (await import(`../../locales/${DEFAULT_LOCALE}.json`)).default;
+      } catch (fallbackError) {
+        console.error(`Failed to load default locale messages`, fallbackError);
+      }
+    }
     return {};
+  }
+}
+
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+  const messages = await getMessages(params.locale);
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+
+  return {
+    title: {
+      template: `%s | ${messages.siteTitle || 'MMORPG Marketplace'}`,
+      default: messages.siteTitle || 'MMORPG Marketplace'
+    },
+    description: messages.siteDescription || 'Buy and sell MMORPG items securely',
+    metadataBase: new URL(`${protocol}://${host}`),
+    alternates: {
+      canonical: '/',
+      languages: {
+        'en': '/en',
+        'id': '/id',
+        'th': '/th'
+      },
+    },
+    openGraph: {
+      title: messages.siteTitle || 'MMORPG Marketplace',
+      description: messages.siteDescription || 'Buy and sell MMORPG items securely',
+      url: `${protocol}://${host}`,
+      siteName: messages.siteTitle || 'MMORPG Marketplace',
+      locale: params.locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: messages.siteTitle || 'MMORPG Marketplace',
+      description: messages.siteDescription || 'Buy and sell MMORPG items securely',
+      site: '@yourtwitterhandle',
+      creator: '@yourtwitterhandle',
+    },
+    viewport: {
+      width: 'device-width',
+      initialScale: 1,
+      maximumScale: 1,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
   }
 }
 
@@ -52,30 +99,38 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  const locale = (await params).locale || "id";
-  const messages = await getMessages(locale);
+  const messages = await getMessages(params.locale);
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={params.locale} suppressHydrationWarning>
       <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content={metadata.description ? String(metadata.description) : undefined} />
-        <meta name="keywords" content="Marketplace MMORPG SEA" />
-        <meta property="og:title" content={metadata.openGraph?.title ? String(metadata.openGraph.title) : undefined} />
-        <meta property="og:description" content={metadata.openGraph?.description ? String(metadata.openGraph.description) : undefined} />
-        <meta property="og:url" content={metadata.openGraph?.url ? String(metadata.openGraph.url) : undefined} />
-        <meta property="og:site_name" content={metadata.openGraph?.siteName ? String(metadata.openGraph.siteName) : undefined} />
-        <meta property="og:locale" content={metadata.openGraph?.locale ? String(metadata.openGraph.locale) : undefined} />
-        <meta name="twitter:title" content={metadata.twitter?.title ? String(metadata.twitter.title) : undefined} />
-        <meta name="twitter:description" content={metadata.twitter?.description ? String(metadata.twitter.description) : undefined} />
-        <meta name="twitter:site" content={metadata.twitter?.site ? String(metadata.twitter.site) : undefined} />
-        <meta name="twitter:creator" content={metadata.twitter?.creator ? String(metadata.twitter.creator) : undefined} />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link
+          rel="alternate"
+          href="/en"
+          hrefLang="en"
+        />
+        <link
+          rel="alternate"
+          href="/id"
+          hrefLang="id"
+        />
+        <link
+          rel="alternate"
+          href="/th"
+          hrefLang="th"
+        />
+        <link
+          rel="alternate"
+          href="/"
+          hrefLang="x-default"
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers messages={messages} locale={locale}>
+        <Providers messages={messages} locale={params.locale}>
           <Layout>
             <ClientLayout>{children}</ClientLayout>
           </Layout>

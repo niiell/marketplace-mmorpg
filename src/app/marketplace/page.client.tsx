@@ -23,6 +23,18 @@ interface Listing {
   };
 }
 
+type Rarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
+
+const isValidRarity = (rarity: string | null | undefined): rarity is Rarity => {
+  return (
+    rarity === "Common" ||
+    rarity === "Uncommon" ||
+    rarity === "Rare" ||
+    rarity === "Epic" ||
+    rarity === "Legendary"
+  );
+};
+
 export default function MarketplacePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,7 +50,13 @@ export default function MarketplacePage() {
   }, [searchParams]);
 
   useEffect(() => {
-    const uniqueCategories = [...new Set(allListings.map((l) => l.category).filter((c): c is string => c !== undefined))];
+    const uniqueCategories = [
+      ...new Set(
+        allListings
+          .map((l) => l.category)
+          .filter((c): c is string => c !== undefined)
+      ),
+    ];
     setCategories(uniqueCategories);
   }, []);
 
@@ -97,7 +115,9 @@ export default function MarketplacePage() {
                 price={listing.price}
                 image={listing.image}
                 category={listing.category}
-                rarity={listing.rarity}
+                rarity={
+                  isValidRarity(listing.rarity) ? listing.rarity : "Common"
+                }
                 level={listing.level}
                 seller={listing.seller}
               />

@@ -1,13 +1,22 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/components/$1',
-    '^@tests/(.*)$': '<rootDir>/__tests__/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@supabase/supabase-js$': '<rootDir>/node_modules/@supabase/supabase-js',
   },
-  setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
-  testMatch: ['**/__tests__/**/*.test.(ts|tsx)'],
-  collectCoverage: true,
-  coverageReporters: ['json', 'text', 'lcov', 'clover'],
-  coverageDirectory: 'coverage',
+  transform: {
+    '^.+\\.(ts|tsx)$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+        '@babel/preset-typescript',
+        ['@babel/preset-react', { runtime: 'automatic' }]
+      ]
+    }]
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@supabase/supabase-js)/)',
+  ],
+  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)']
 };
