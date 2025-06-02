@@ -41,26 +41,23 @@ const originalLocation = window.location;
 
 // Set up location mock before each test
 beforeEach(() => {
-  // Define non-enumerable properties to avoid JSDOM issues
-  Object.defineProperties(window, {
-    location: {
+  if (Object.getOwnPropertyDescriptor(window, 'location')?.configurable) {
+    Object.defineProperty(window, 'location', {
       configurable: true,
       enumerable: true,
       value: mockLocation,
       writable: true
-    }
-  });
+    });
+  }
 });
 
 // Restore original location after each test
 afterEach(() => {
-  Object.defineProperties(window, {
-    location: {
-      configurable: true,
-      enumerable: true,
-      value: originalLocation,
-      writable: true
-    }
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    enumerable: true,
+    value: originalLocation,
+    writable: true
   });
   
   // Clear all mocks

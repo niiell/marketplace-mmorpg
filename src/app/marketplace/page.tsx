@@ -14,6 +14,7 @@ import { useSwipeable } from 'react-swipeable';
 import { useDebounce } from "../../hooks/useDebounce";
 import Toast from "../../components/Toast";
 import SearchBar from "../../components/SearchBar";
+import FilterSidebar from "../../components/FilterSidebar";
 import { useAnalytics } from "../../hooks/useAnalytics";
 import { monitoring } from "../../utils/monitoring";
 import MarketplaceErrorBoundary from "../../components/MarketplaceErrorBoundary";
@@ -395,20 +396,29 @@ export default function MarketplacePage() {
           </div>
 
           {/* Search and filter sections with improved tab order */}
-          <div className="mb-6">
-            <SearchBar
-              onSearch={handleSearch}
-              placeholder="Search by item name or description..."
-              suggestions={searchSuggestions}
-              className="max-w-2xl mx-auto"
-            />
-            <div className="mt-2 text-center">
-              <button
-                onClick={() => document.getElementById("filters-section")?.focus()}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Jump to filters
-              </button>
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+            <div className="flex-grow">
+              <SearchBar
+                onSearch={handleSearch}
+                placeholder="Search by item name or description..."
+                className="max-w-2xl mx-auto"
+              />
+            </div>
+            <div className="w-64">
+              <FilterSidebar
+                categories={["Weapons", "Armor", "Accessories", "Consumables", "Materials", "Mounts"]}
+                locations={["Asia", "Europe", "America", "SEA"]}
+                onFilterChange={(filters) => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    category: filters.category || "",
+                    priceRange: filters.priceRange
+                      ? { min: filters.priceRange[0].toString(), max: filters.priceRange[1].toString() }
+                      : prev.priceRange,
+                    location: filters.location || "",
+                  }));
+                }}
+              />
             </div>
           </div>
 

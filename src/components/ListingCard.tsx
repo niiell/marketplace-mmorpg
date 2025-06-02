@@ -133,6 +133,7 @@ export default function ListingCard({
               src={imageError ? "/placeholder-image.jpg" : image}
               alt={`Image of ${title}`}
               fill
+              loading="lazy"
               className={`object-cover transition-all duration-300 ${
                 imageLoading ? "opacity-0" : "opacity-100"
               } group-hover:scale-105`}

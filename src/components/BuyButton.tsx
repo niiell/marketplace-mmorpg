@@ -177,7 +177,7 @@ export default function BuyButton({
           className={`relative ${className}`}
         >
           <span className="flex items-center space-x-2">
-            {isLoading ? (
+        isLoading ? (
               <motion.div
                 className="flex items-center space-x-2"
                 animate={{ opacity: [1, 0.5, 1] }}
@@ -188,6 +188,7 @@ export default function BuyButton({
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"
@@ -212,6 +213,7 @@ export default function BuyButton({
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -228,7 +230,7 @@ export default function BuyButton({
                   {item.stock === 0 ? "Out of Stock" : (isQuantityOpen ? "Add to Cart" : "Select Quantity")}
                 </span>
               </>
-            )}
+            )
           </span>
         </SmokeButton>
       </div>

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  Style Guide Reference:
+  See src/styles/style-guide.md for detailed color palette, typography, button styles,
+  layout and spacing guidelines, and responsive design principles.
+*/
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

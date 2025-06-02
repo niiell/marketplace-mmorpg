@@ -3,7 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
+import { csrfMiddleware } from '../../../middleware/csrf';
+
 export async function POST(req: NextRequest) {
+  // Run CSRF middleware first
+  const csrfResponse = await csrfMiddleware(req);
+  if (csrfResponse.status !== 200 && csrfResponse.status !== 204) {
+    return csrfResponse;
+  }
+
   try {
     const { transaction_id } = await req.json();
     if (!transaction_id) return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
