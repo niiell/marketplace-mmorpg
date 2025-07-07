@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useCurrency } from "../context/CurrencyContext";
 import WishlistButton from "./WishlistButton";
@@ -75,16 +75,16 @@ export default function ListingCard({
     Legendary: "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800",
   } as const;
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
+      transition: { duration: 0.5, ease: "easeInOut" },
     },
   };
 
-  const imageVariants = {
+  const imageVariants: Variants = {
     hover: { scale: 1.05, transition: { duration: 0.3 } },
     tap: { scale: 0.95 },
   };

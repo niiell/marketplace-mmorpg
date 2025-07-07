@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from '../../../lib/supabase';
-import { Card, CardBody } from "@nextui-org/react";
+import { Card, CardBody } from "@heroui/react";
 import ChatButton from '../../../components/ChatButton';
 import ReviewForm from '../../../components/ReviewForm';
 import AuthGuard from '../../../components/AuthGuard';

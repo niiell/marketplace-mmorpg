@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import ScrollArea from "./ScrollArea";
 import Badge from "./Badge";
@@ -43,18 +43,18 @@ export default function FilterDrawer({
     setIsOpen(false);
   };
 
-  const variants = {
+  const variants: Variants = {
     hidden: {
       x: "100%",
-      transition: { type: "spring", stiffness: 300, damping: 30 },
+      transition: { type: "tween" },
     },
     visible: {
       x: 0,
-      transition: { type: "spring", stiffness: 300, damping: 30 },
+      transition: { type: "tween" },
     },
   };
 
-  const overlayVariants = {
+  const overlayVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
   };
