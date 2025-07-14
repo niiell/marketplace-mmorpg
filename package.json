@@ -23,7 +23,7 @@
     "@sentry/nextjs": "^9.33.0",
     "@sentry/tracing": "^7.120.3",
     "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "^2.49.4",
+    "@supabase/supabase-js": "^2.51.0",
     "class-variance-authority": "^0.7.1",
     "firebase": "^11.6.1",
     "framer-motion": "^12.20.1",
