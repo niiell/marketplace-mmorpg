@@ -83,7 +83,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.0-beta.3",
     "next-themes": "^0.4.6",
-    "postcss": "^8.4.35",
+    "postcss": "^8.4.36",
     "start-server-and-test": "^2.0.12",
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.3.2",
