@@ -50,7 +50,7 @@
     "swiper": "^11.2.6",
     "swr": "^2.3.3",
     "workbox-webpack-plugin": "^7.3.0",
-    "zod": "^3.24.3"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",
